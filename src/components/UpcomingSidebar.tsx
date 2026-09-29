@@ -6,9 +6,9 @@ import {
   ChevronRight,
   GraduationCap,
   Info,
-  KeyRound,
   MapPin,
   Sparkles,
+  Users,
 } from 'lucide-react';
 import { AcademicEvent, SemesterFilter } from '../types.ts';
 import {
@@ -124,13 +124,13 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
           </div>
         </div>
 
-        {/* Section 2: Jadwal Registrasi & Administrasi (Data Real) */}
+        {/* Section 2: Jadwal Kesiswaan, OSIS & PKL (Data Real) */}
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <div className="bg-[#143c14] text-white px-3 py-1.5 rounded-full flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2">
-              <KeyRound className="w-3.5 h-3.5 text-[#ffcc00]" />
+              <Users className="w-3.5 h-3.5 text-[#ffcc00]" />
               <h4 className="font-black text-xs uppercase tracking-wide">
-                Registrasi & Administrasi
+                Kesiswaan, OSIS & PKL
               </h4>
             </div>
             <span className="text-[10px] bg-[#ffcc00] text-[#143c14] font-extrabold px-1.5 py-0.2 rounded-full">
@@ -141,7 +141,7 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
           <div className="space-y-1.5 text-xs text-slate-800 pl-1 font-medium max-h-52 overflow-y-auto pr-1">
             {registrationAndAdminEvents.length === 0 ? (
               <p className="text-[11px] text-slate-500 italic py-1">
-                Tidak ada agenda registrasi/administrasi pada filter ini.
+                Tidak ada agenda kesiswaan/PKL pada filter ini.
               </p>
             ) : (
               registrationAndAdminEvents.map((evt) => (
@@ -233,7 +233,7 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
           <span>SMK IT Ibnul Qayyim Makassar</span>
         </div>
         <p className="text-[11px] text-blue-100 leading-relaxed">
-          Pusat Keunggulan Vokasi & Pondok Pesantren Tahfizh Quran. Mencetak generasi Muslim yang Berakhlak Mulia, Hafizh Quran dan Terampil IT.
+          Hafizh Qur'an Jago Komputer. Mencetak generasi Muslim yang Berakhlak Mulia, Hafizh Quran dan Terampil IT.
         </p>
         <div className="text-[10px] font-bold text-[#ffcc00] pt-1 border-t border-white/10 uppercase tracking-wide">
           Kompetensi: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)

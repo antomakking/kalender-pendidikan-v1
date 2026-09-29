@@ -1,0 +1,50 @@
+# ==============================================================================
+# SMK IT Ibnul Qayyim - Kalender Pendidikan (.htaccess for Hostinger / Apache / LiteSpeed)
+# ==============================================================================
+
+# 1. Pastikan MIME Type JavaScript & CSS dikirim dengan benar oleh Web Server
+<IfModule mod_mime.c>
+    AddType text/javascript .js .mjs
+    AddType application/javascript .js .mjs
+    AddType text/css .css
+    AddType application/json .json
+    AddType image/svg+xml .svg
+    AddType font/woff2 .woff2
+    AddType font/woff .woff
+</IfModule>
+
+# 2. Security Headers (Cegah MIME Sniffing & Clickjacking)
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 3. SPA Fallback Routing (Single Page Application)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Jangan rewrite jika berkas fisik atau direktori memang ada
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Kirim semua rute lain ke index.html
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# 4. Cache Control untuk Kecepatan & Kesegaran Data
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Berkas JS & CSS bundle (dengan hash) di-cache 1 tahun
+    ExpiresByType text/javascript "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+
+    # HTML tidak di-cache agar rilis baru langsung terbaca
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
