@@ -8,6 +8,7 @@ import { Header } from './components/Header.tsx';
 import { MonthView } from './components/MonthView.tsx';
 import { PinModal } from './components/PinModal.tsx';
 import { PrintModal } from './components/PrintModal.tsx';
+import { StandaloneExportModal } from './components/StandaloneExportModal.tsx';
 import { StatsBanner } from './components/StatsBanner.tsx';
 import { UpcomingSidebar } from './components/UpcomingSidebar.tsx';
 import { WeekView } from './components/WeekView.tsx';
@@ -93,6 +94,7 @@ export default function App() {
   const [defaultFormDate, setDefaultFormDate] = useState<string>(TODAY_STR);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [isStandaloneExportOpen, setIsStandaloneExportOpen] = useState<boolean>(false);
 
   // 4. Security & PIN Authentication State (15-Minute Periodic Expiration)
   const [isManagerUnlocked, setIsManagerUnlocked] = useState<boolean>(() => isSessionUnlocked());
@@ -361,6 +363,7 @@ export default function App() {
       <Header
         onAddEvent={() => handleOpenAddEvent()}
         onOpenPrint={() => setIsPrintModalOpen(true)}
+        onOpenStandaloneExport={() => setIsStandaloneExportOpen(true)}
         onExportICal={() => setIsExportModalOpen(true)}
         isManagerUnlocked={isManagerUnlocked}
         remainingSeconds={sessionRemainingSeconds}
@@ -560,6 +563,12 @@ export default function App() {
         events={events}
         academicYear={academicYear}
         onClose={() => setIsExportModalOpen(false)}
+      />
+
+      <StandaloneExportModal
+        isOpen={isStandaloneExportOpen}
+        events={events}
+        onClose={() => setIsStandaloneExportOpen(false)}
       />
 
       {/* Security PIN Authorization Modal */}

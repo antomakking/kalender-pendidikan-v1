@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Informasi Kalender Akademik - SMK IT Ibnul Qayyim Makassar</title>
+  <meta name="description" content="Kalender Pendidikan dan Agenda Akademik SMK IT Ibnul Qayyim Makassar TA 2026/2027">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- React & Babel Standalone CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    @media print {
+      .no-print, header, nav, button, .modal-backdrop {
+        display: none !important;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col selection:bg-emerald-200 selection:text-emerald-900">
+  <div id="root"></div>
+
+  <!-- Main React Application Script with Babel -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- SEED DATA ---
+    const INITIAL_EVENTS = [
+      {
+        id: 'evt-2026-07-001',
+        title: 'Tahun Ajaran Baru (Awal Masuk Santri)',
+        startDate: '2026-07-13',
+        endDate: '2026-07-13',
+        startTime: '07:30',
+        endTime: '15:00',
+        category: 'academic',
+        description: 'Penyambutan seluruh santri baru dan santri lama di kampus SMK IT Ibnul Qayyim Makassar.',
+        location: 'Kampus SMK IT Ibnul Qayyim Makassar',
+        audience: 'Seluruh Siswa (Kelas X, XI, XII)',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-07-002',
+        title: 'Masa Pengenalan Lingkungan Sekolah (MPLS)',
+        startDate: '2026-07-13',
+        endDate: '2026-07-18',
+        startTime: '07:30',
+        endTime: '15:00',
+        category: 'student',
+        description: 'Pengenalan kurikulum kejuruan RPL & Bisnis Digital, adab santri, dan tata tertib pesantren.',
+        location: 'Aula & Kampus SMK IT Ibnul Qayyim',
+        audience: 'Siswa Baru (Kelas X)',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-07-003',
+        title: 'KBM Efektif Semester Ganjil Dimulai',
+        startDate: '2026-07-20',
+        endDate: '2026-07-20',
+        startTime: '07:30',
+        endTime: '15:30',
+        category: 'academic',
+        description: 'Awal kegiatan belajar mengajar efektif semester ganjil TA 2026/2027.',
+        location: 'Ruang Kelas & Lab Komputer',
+        audience: 'Seluruh Siswa (Kelas X, XI, XII)',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-08-001',
+        title: 'Hari Proklamasi Kemerdekaan RI ke-81',
+        startDate: '2026-08-17',
+        endDate: '2026-08-17',
+        category: 'holiday',
+        description: 'Upacara peringatan HUT Kemerdekaan RI dan Libur Nasional resmi.',
+        location: 'Lapangan Kampus Ibnul Qayyim',
+        audience: 'Seluruh Sivitas Akademika',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2026-08-002',
+        title: 'Maulid Nabi Muhammad SAW 1448 H',
+        startDate: '2026-08-25',
+        endDate: '2026-08-25',
+        category: 'holiday',
+        description: 'Hari Libur Nasional memperingati Maulid Nabi Muhammad SAW.',
+        location: 'Nasional',
+        audience: 'Seluruh Siswa & Guru',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2026-09-001',
+        title: 'Asesmen Sumatif Tengah Semester (ASTS) Ganjil',
+        startDate: '2026-09-21',
+        endDate: '2026-09-26',
+        startTime: '07:30',
+        endTime: '12:30',
+        category: 'academic',
+        description: 'Evaluasi capaian pembelajaran tengah semester ganjil teori dan produktif kejuruan.',
+        location: 'Ruang Ujian SMK IT Ibnul Qayyim',
+        audience: 'Seluruh Siswa (Kelas X, XI, XII)',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-10-001',
+        title: 'Gelar Karya Projek P5 Kejuruan RPL & BD',
+        startDate: '2026-10-19',
+        endDate: '2026-10-24',
+        startTime: '08:00',
+        endTime: '15:00',
+        category: 'student',
+        description: 'Pameran hasil karya aplikasi software santri RPL dan produk digital santri Bisnis Digital.',
+        location: 'Aula & Area Showcase Kampus',
+        audience: 'Seluruh Siswa, Guru & Orang Tua',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-11-001',
+        title: 'Ujian Tasmi Al-Quran & Uji Kompetensi Kejuruan',
+        startDate: '2026-11-23',
+        endDate: '2026-11-28',
+        startTime: '08:00',
+        endTime: '14:00',
+        category: 'academic',
+        description: 'Ujian hafalan Al-Quran bersanad dan pra-uji sertifikasi kompetensi keahlian.',
+        location: 'Masjid & Lab Komputer Ibnul Qayyim',
+        audience: 'Seluruh Siswa',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-12-001',
+        title: 'Asesmen Sumatif Akhir Semester (ASAS) Ganjil',
+        startDate: '2026-12-07',
+        endDate: '2026-12-12',
+        startTime: '07:30',
+        endTime: '13:00',
+        category: 'academic',
+        description: 'Ujian semester akhir ganjil seluruh mata pelajaran umum dan kejuruan.',
+        location: 'Ruang Ujian SMK IT Ibnul Qayyim',
+        audience: 'Seluruh Siswa (Kelas X, XI, XII)',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-12-002',
+        title: 'Pengolahan Nilai & Rapat Dewan Guru',
+        startDate: '2026-12-14',
+        endDate: '2026-12-18',
+        startTime: '08:00',
+        endTime: '15:00',
+        category: 'teacher',
+        description: 'Rekapitulasi rapor, verifikasi nilai kejuruan, dan rapat kenaikan nilai dewan asatidzah.',
+        location: 'Ruang Guru SMK IT Ibnul Qayyim',
+        audience: 'Dewan Guru & Tenaga Kependidikan',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-12-003',
+        title: 'Penyerahan Rapor Semester Ganjil',
+        startDate: '2026-12-19',
+        endDate: '2026-12-19',
+        startTime: '08:00',
+        endTime: '12:00',
+        category: 'teacher',
+        description: 'Pembagian Buku Laporan Hasil Belajar (Rapor) kepada orang tua / wali santri.',
+        location: 'Aula Kampus SMK IT Ibnul Qayyim',
+        audience: 'Orang Tua / Wali Santri & Seluruh Siswa',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+      },
+      {
+        id: 'evt-2026-12-004',
+        title: 'Libur Akhir Semester Ganjil & Tahun Baru 2027',
+        startDate: '2026-12-21',
+        endDate: '2027-01-02',
+        category: 'holiday',
+        description: 'Libur semester ganjil dan libur tahun baru Masehi bagi santri.',
+        location: 'Kampus / Libur Pesantren',
+        audience: 'Seluruh Siswa & Guru',
+        academicYear: '2026/2027',
+        semester: 'ganjil',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2027-01-001',
+        title: 'Awal Masuk KBM Semester Genap TA 2026/2027',
+        startDate: '2027-01-04',
+        endDate: '2027-01-04',
+        startTime: '07:30',
+        endTime: '15:30',
+        category: 'academic',
+        description: 'Hari pertama kegiatan belajar mengajar semester genap seluruh tingkat kelas.',
+        location: 'Kampus SMK IT Ibnul Qayyim Makassar',
+        audience: 'Seluruh Siswa (Kelas X, XI, XII)',
+        academicYear: '2026/2027',
+        semester: 'genap',
+      },
+      {
+        id: 'evt-2027-01-002',
+        title: 'Pelepasan & Pembekalan Praktik Kerja Lapangan (PKL)',
+        startDate: '2027-01-11',
+        endDate: '2027-01-11',
+        startTime: '08:00',
+        endTime: '12:00',
+        category: 'student',
+        description: 'Pemberangkatan santri kelas XI ke instansi industri mitra software house dan agensi digital.',
+        location: 'Aula Utama SMK IT Ibnul Qayyim',
+        audience: 'Siswa Kelas XI & Pembimbing Industri',
+        academicYear: '2026/2027',
+        semester: 'genap',
+      },
+      {
+        id: 'evt-2027-02-001',
+        title: 'Isro Mi\'raj Nabi Muhammad SAW 1448 H',
+        startDate: '2027-02-04',
+        endDate: '2027-02-04',
+        category: 'holiday',
+        description: 'Hari Libur Nasional Isra Mi\'raj Nabi Muhammad SAW.',
+        location: 'Nasional',
+        audience: 'Seluruh Sivitas Akademika',
+        academicYear: '2026/2027',
+        semester: 'genap',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2027-03-001',
+        title: 'Libur Awal Ramadhan 1448 H & Tarhib Ramadhan',
+        startDate: '2027-03-08',
+        endDate: '2027-03-10',
+        category: 'holiday',
+        description: 'Libur permulaan puasa Ramadhan 1448 H dan kegiatan Tarhib Ramadhan.',
+        location: 'Kampus & Pesantren',
+        audience: 'Seluruh Siswa & Guru',
+        academicYear: '2026/2027',
+        semester: 'genap',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2027-03-002',
+        title: 'Hari Raya Idul Fitri 1448 H & Cuti Bersama',
+        startDate: '2027-03-18',
+        endDate: '2027-03-27',
+        category: 'holiday',
+        description: 'Libur Hari Raya Idul Fitri 1448 H dan Cuti Bersama Nasional.',
+        location: 'Nasional',
+        audience: 'Seluruh Sivitas Akademika',
+        academicYear: '2026/2027',
+        semester: 'genap',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2027-04-001',
+        title: 'Ujian Sekolah & Uji Kompetensi Keahlian (UKK) Kelas XII',
+        startDate: '2027-04-12',
+        endDate: '2027-04-17',
+        startTime: '07:30',
+        endTime: '15:00',
+        category: 'academic',
+        description: 'Uji sertifikasi keahlian LSP/BNSP dan Ujian Kelulusan bagi santri kelas XII.',
+        location: 'Lab Komputer & Ruang Uji Sertifikasi',
+        audience: 'Siswa Tingkat Akhir (Kelas XII)',
+        academicYear: '2026/2027',
+        semester: 'genap',
+      },
+      {
+        id: 'evt-2027-05-001',
+        title: 'Hari Raya Idul Adha 1448 H',
+        startDate: '2027-05-27',
+        endDate: '2027-05-29',
+        category: 'holiday',
+        description: 'Libur Nasional Hari Raya Idul Adha dan Hari Tasyrik.',
+        location: 'Kampus & Masjid Ibnul Qayyim',
+        audience: 'Seluruh Siswa & Guru',
+        academicYear: '2026/2027',
+        semester: 'genap',
+        isOfficialHoliday: true,
+      },
+      {
+        id: 'evt-2027-06-001',
+        title: 'Asesmen Sumatif Akhir Tahun (ASAT) Genap',
+        startDate: '2027-06-07',
+        endDate: '2027-06-12',
+        startTime: '07:30',
+        endTime: '13:00',
+        category: 'academic',
+        description: 'Ujian penentu kenaikan kelas X & XI TA 2026/2027.',
+        location: 'Ruang Ujian SMK IT Ibnul Qayyim',
+        audience: 'Siswa Kelas X & XI',
+        academicYear: '2026/2027',
+        semester: 'genap',
+      },
+      {
+        id: 'evt-2027-06-002',
+        title: 'Wisuda Santri Kelas XII & Penyerahan Rapor Kenaikan Kelas',
+        startDate: '2027-06-19',
+        endDate: '2027-06-19',
+        startTime: '08:00',
+        endTime: '13:30',
+        category: 'teacher',
+        description: 'Wisuda kelulusan angkatan SMK IT Ibnul Qayyim dan pembagian buku rapor kenaikan kelas.',
+        location: 'Ballroom / Aula Utama Kampus',
+        audience: 'Seluruh Siswa, Orang Tua & Undangan',
+        academicYear: '2026/2027',
+        semester: 'genap',
+      },
+      {
+        id: 'evt-2027-06-003',
+        title: 'Libur Akhir Tahun Pelajaran 2026/2027',
+        startDate: '2027-06-21',
+        endDate: '2027-07-10',
+        category: 'holiday',
+        description: 'Libur kenaikan kelas dan libur akhir tahun pelajaran.',
+        location: 'Kampus / Libur Pesantren',
+        audience: 'Seluruh Siswa & Dewan Guru',
+        academicYear: '2026/2027',
+        semester: 'genap',
+        isOfficialHoliday: true,
+      }
+    ];
+
+    const MONTH_NAMES_ID = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    const DAY_NAMES_ID = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+
+    const DISTINCT_EVENT_PALETTES = [
+      { bgSolid: 'bg-[#ffcc00] text-slate-950 font-bold hover:bg-[#e6b800]', badgeBg: 'bg-amber-100 text-amber-950 border-amber-300', dot: 'bg-[#ffcc00]' },
+      { bgSolid: 'bg-[#0284c7] text-white font-bold hover:bg-[#0369a1]', badgeBg: 'bg-sky-100 text-sky-900 border-sky-300', dot: 'bg-[#0284c7]' },
+      { bgSolid: 'bg-[#15803d] text-white font-bold hover:bg-[#166534]', badgeBg: 'bg-emerald-100 text-emerald-950 border-emerald-300', dot: 'bg-[#15803d]' },
+      { bgSolid: 'bg-[#7c3aed] text-white font-bold hover:bg-[#6d28d9]', badgeBg: 'bg-purple-100 text-purple-950 border-purple-300', dot: 'bg-[#7c3aed]' },
+      { bgSolid: 'bg-[#ea580c] text-white font-bold hover:bg-[#c2410c]', badgeBg: 'bg-orange-100 text-orange-950 border-orange-300', dot: 'bg-[#ea580c]' },
+    ];
+
+    const HOLIDAY_STYLE = { bgSolid: 'bg-[#dc2626] text-white font-bold hover:bg-[#b91c1c]', badgeBg: 'bg-rose-100 text-rose-800 border-rose-300', dot: 'bg-[#dc2626]' };
+
+    function getEventColorInMonth(event, monthEvents) {
+      if (event.category === 'holiday') return HOLIDAY_STYLE;
+      const nonHolidays = monthEvents.filter(e => e.category !== 'holiday');
+      const idx = nonHolidays.findIndex(e => e.id === event.id);
+      return idx === -1 ? DISTINCT_EVENT_PALETTES[0] : DISTINCT_EVENT_PALETTES[idx % DISTINCT_EVENT_PALETTES.length];
+    }
+
+    // --- MAIN REACT APP COMPONENT ---
+    function App() {
+      const [events, setEvents] = useState(() => {
+        try {
+          const stored = localStorage.getItem('smk_it_kalender_standalone_v1');
+          if (stored) return JSON.parse(stored);
+        } catch (e) {}
+        return INITIAL_EVENTS;
+      });
+
+      const [currentView, setCurrentView] = useState('year'); // 'year', 'month', 'agenda'
+      const [academicYear, setAcademicYear] = useState('2026/2027');
+      const [currentYear, setCurrentYear] = useState(2026);
+      const [currentMonth, setCurrentMonth] = useState(8); // September
+      const [categoryFilter, setCategoryFilter] = useState('all');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedEvent, setSelectedEvent] = useState(null);
+
+      // Save to localStorage
+      useEffect(() => {
+        try {
+          localStorage.setItem('smk_it_kalender_standalone_v1', JSON.stringify(events));
+        } catch (e) {}
+      }, [events]);
+
+      // Re-initialize Lucide Icons after render
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      // Filtered Events
+      const filteredEvents = useMemo(() => {
+        return events.filter(e => {
+          if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
+          if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            return e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q) || e.audience.toLowerCase().includes(q);
+          }
+          return true;
+        });
+      }, [events, categoryFilter, searchQuery]);
+
+      // Month View Matrix Generator
+      const monthsList = [
+        { year: 2026, month: 6 },  // Juli 2026
+        { year: 2026, month: 7 },  // Agustus 2026
+        { year: 2026, month: 8 },  // September 2026
+        { year: 2026, month: 9 },  // Oktober 2026
+        { year: 2026, month: 10 }, // November 2026
+        { year: 2026, month: 11 }, // Desember 2026
+        { year: 2027, month: 0 },  // Januari 2027
+        { year: 2027, month: 1 },  // Februari 2027
+        { year: 2027, month: 2 },  // Maret 2027
+        { year: 2027, month: 3 },  // April 2027
+        { year: 2027, month: 4 },  // Mei 2027
+        { year: 2027, month: 5 },  // Juni 2027
+      ];
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* HEADER */}
+          <header className="bg-[#143c14] border-b-4 border-[#ffcc00] text-white sticky top-0 z-40 shadow-md">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#ffcc00] text-[#143c14] flex items-center justify-center font-black">
+                  <i data-lucide="calendar" class="w-5 h-5 text-[#143c14]"></i>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-white text-base sm:text-lg leading-tight">KALENDER AKADEMIK</span>
+                    <span className="text-[10px] font-bold bg-[#ffcc00] text-[#143c14] px-1.5 py-0.2 rounded-xs uppercase">TA. 2026/2027</span>
+                  </div>
+                  <span className="text-xs text-emerald-200/90 font-medium hidden sm:block">SMK IT Ibnul Qayyim Makassar</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20"
+                >
+                  <i data-lucide="printer" class="w-4 h-4 text-[#ffcc00]"></i>
+                  <span className="hidden sm:inline">Cetak PDF</span>
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* MAIN CONTENT CONTAINER */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+            
+            {/* HERO STATS */}
+            <div className="bg-white border-2 border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">SMK IT Ibnul Qayyim Makassar · Kurikulum Merdeka</span>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">Kalender Pendidikan Resmi TA {academicYear}</h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">Panduan jadwal pembelajaran kejuruan RPL & Bisnis Digital, asesmen, dan libur resmi.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center min-w-[100px]">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase">Hari Belajar</span>
+                  <div className="text-xl font-black text-emerald-950 tabular-nums">114 <span className="text-xs font-normal">Hari</span></div>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center min-w-[100px]">
+                  <span className="text-[10px] font-bold text-amber-800 uppercase">Total Agenda</span>
+                  <div className="text-xl font-black text-amber-950 tabular-nums">{events.length}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* CONTROLS BAR */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+                  <button
+                    onClick={() => setCurrentView('year')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg ${currentView === 'year' ? 'bg-[#143c14] text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    Tahunan (12 Bulan)
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('agenda')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg ${currentView === 'agenda' ? 'bg-[#143c14] text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    Daftar Agenda
+                  </button>
+                </div>
+
+                <div className="relative flex-1 sm:max-w-xs">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari kegiatan, ujian, libur..."
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#143c14]"
+                  />
+                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+                </div>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs pt-2 border-t border-slate-100">
+                <button
+                  onClick={() => setCategoryFilter('all')}
+                  className={`px-2.5 py-1 rounded-lg font-bold ${categoryFilter === 'all' ? 'bg-[#143c14] text-white' : 'bg-slate-100 text-slate-700'}`}
+                >
+                  Semua
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('academic')}
+                  className={`px-2.5 py-1 rounded-lg font-bold border ${categoryFilter === 'academic' ? 'bg-[#ffcc00] text-slate-950 border-amber-500' : 'bg-amber-50 text-amber-950 border-amber-300'}`}
+                >
+                  KBM & Ujian
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('student')}
+                  className={`px-2.5 py-1 rounded-lg font-bold border ${categoryFilter === 'student' ? 'bg-[#0284c7] text-white border-sky-600' : 'bg-sky-50 text-sky-950 border-sky-300'}`}
+                >
+                  Kesiswaan & PKL
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('holiday')}
+                  className={`px-2.5 py-1 rounded-lg font-bold border ${categoryFilter === 'holiday' ? 'bg-[#dc2626] text-white border-rose-600' : 'bg-rose-50 text-rose-950 border-rose-300'}`}
+                >
+                  Hari Libur
+                </button>
+              </div>
+            </div>
+
+            {/* VIEW 1: 12-MONTH CALENDAR POSTER GRID */}
+            {currentView === 'year' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {monthsList.map(({ year, month }) => {
+                    const monthEvents = filteredEvents.filter(e => {
+                      const startYM = e.startDate.slice(0, 7);
+                      const endYM = e.endDate.slice(0, 7);
+                      const curYM = `${year}-${String(month + 1).padStart(2, '0')}`;
+                      return curYM >= startYM && curYM <= endYM;
+                    });
+
+                    const firstDayOfMonth = new Date(year, month, 1);
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Monday = 0
+
+                    return (
+                      <div key={`${year}-${month}`} className="bg-white border-2 border-slate-200 rounded-xl p-3 shadow-xs flex flex-col justify-start">
+                        {/* Card Header */}
+                        <div className="bg-[#143c14] text-white py-1.5 px-3 rounded-lg flex items-center justify-between mb-2">
+                          <span className="font-black text-xs uppercase tracking-wider">{MONTH_NAMES_ID[month]} {year}</span>
+                          <span className="text-[10px] font-bold text-amber-300">{monthEvents.length} Agenda</span>
+                        </div>
+
+                        {/* Day Names */}
+                        <div className="grid grid-cols-7 gap-1 text-center font-extrabold text-[9px] mb-1">
+                          {['Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb', 'Ah'].map((d, idx) => (
+                            <div key={d} className={`py-0.5 rounded ${idx === 6 ? 'text-[#dc2626]' : 'text-[#143c14]'}`}>{d}</div>
+                          ))}
+                        </div>
+
+                        {/* Dates Grid */}
+                        <div className="grid grid-cols-7 gap-1 text-center text-[10px]">
+                          {Array.from({ length: startDayOfWeek }).map((_, i) => (
+                            <div key={`empty-${i}`} className="py-1" />
+                          ))}
+
+                          {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const dayNum = i + 1;
+                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                            const dateObj = new Date(year, month, dayNum);
+                            const isSunday = (dateObj.getDay() + 6) % 7 === 6;
+                            const dayEvts = monthEvents.filter(e => dateStr >= e.startDate && dateStr <= e.endDate);
+                            const primaryEvt = dayEvts[0];
+                            const evtStyle = primaryEvt ? getEventColorInMonth(primaryEvt, monthEvents) : null;
+
+                            return (
+                              <div
+                                key={dateStr}
+                                onClick={() => primaryEvt && setSelectedEvent(primaryEvt)}
+                                className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer ${
+                                  evtStyle
+                                    ? `${evtStyle.bgSolid} shadow-2xs`
+                                    : isSunday
+                                    ? 'text-[#dc2626] font-bold hover:bg-rose-50'
+                                    : 'text-slate-700 hover:bg-slate-100 font-medium'
+                                }`}
+                              >
+                                <span>{dayNum}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Month Agenda Highlights */}
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] flex-1 flex flex-col justify-start">
+                          {monthEvents.length > 0 ? (
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agenda ({monthEvents.length})</span>
+                              {monthEvents.map(evt => {
+                                const evtStyle = getEventColorInMonth(evt, monthEvents);
+                                const sDay = parseInt(evt.startDate.slice(8), 10);
+                                const eDay = parseInt(evt.endDate.slice(8), 10);
+                                const dateRangeText = sDay === eDay ? `${sDay}` : `${sDay}–${eDay}`;
+
+                                return (
+                                  <div
+                                    key={evt.id}
+                                    onClick={() => setSelectedEvent(evt)}
+                                    className={`truncate text-[10px] font-semibold px-2 py-0.5 rounded cursor-pointer flex items-center justify-between gap-1 ${evtStyle.bgSolid}`}
+                                  >
+                                    <span className="truncate flex-1">{evt.title}</span>
+                                    <span className="text-[9px] opacity-85 shrink-0 font-mono">{dateRangeText} {MONTH_NAMES_ID[month].slice(0, 3)}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="text-[10px] text-slate-400 italic py-1">KBM Reguler sesuai jadwal</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Bottom Disclaimer */}
+                <div className="bg-[#143c14] text-white rounded-xl p-3 text-center text-xs font-bold border-t-2 border-[#ffcc00]">
+                  <span className="text-[#ffcc00] uppercase mr-1">PERHATIAN:</span>
+                  Jadwal dapat berubah mengikuti informasi dari Pemerintah dan Yayasan. Seluruh perubahan jadwal akan diumumkan melalui surat edaran resmi.
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 2: AGENDA LIST */}
+            {currentView === 'agenda' && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+                <h3 className="font-bold text-base text-slate-900">Seluruh Agenda Terjadwal ({filteredEvents.length})</h3>
+                <div className="space-y-2">
+                  {filteredEvents.map(evt => (
+                    <div
+                      key={evt.id}
+                      onClick={() => setSelectedEvent(evt)}
+                      className="p-3 rounded-xl border border-slate-200 hover:border-emerald-600 transition-colors cursor-pointer flex items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${evt.category === 'holiday' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-950'}`}>
+                            {evt.category.toUpperCase()}
+                          </span>
+                          <span className="text-xs font-bold text-slate-500">{evt.startDate} s/d {evt.endDate}</span>
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900">{evt.title}</h4>
+                        <p className="text-xs text-slate-600">{evt.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+
+          {/* DETAIL MODAL */}
+          {selectedEvent && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" onClick={() => setSelectedEvent(null)}>
+              <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Detail Agenda</span>
+                  <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+                </div>
+                <h3 className="text-base font-bold text-slate-900">{selectedEvent.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{selectedEvent.description}</p>
+                <div className="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-100">
+                  <div>📅 <strong>Tanggal:</strong> {selectedEvent.startDate} s/d {selectedEvent.endDate}</div>
+                  <div>📍 <strong>Lokasi:</strong> {selectedEvent.location}</div>
+                  <div>👥 <strong>Peserta:</strong> {selectedEvent.audience}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FOOTER */}
+          <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 mt-12 text-center">
+            <p className="font-semibold text-slate-800">© 2026 SMK IT Ibnul Qayyim Makassar · Sistem Informasi Kalender Akademik Standalone</p>
+            <p className="text-slate-400 mt-0.5">Konsentrasi Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)</p>
+          </footer>
+        </div>
+      );
+    }
+
+    // Mount React App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

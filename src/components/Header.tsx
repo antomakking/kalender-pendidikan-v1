@@ -16,6 +16,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onAddEvent,
   onOpenPrint,
+  onOpenStandaloneExport,
   onExportICal,
   isManagerUnlocked = false,
   remainingSeconds = 0,
@@ -91,6 +92,19 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
+          {/* Export Standalone Single-File HTML */}
+          {onOpenStandaloneExport && (
+            <button
+              onClick={onOpenStandaloneExport}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg transition-colors border border-amber-300 whitespace-nowrap cursor-pointer shadow-2xs"
+              title="Unduh satu file index.html mandiri (Standalone) siap pakai tanpa build"
+            >
+              <Download className="w-4 h-4 text-slate-950" />
+              <span className="hidden sm:inline">Unduh index.html</span>
+              <span className="sm:hidden">.html</span>
+            </button>
+          )}
+
           {/* Export iCal (.ics) / Google Calendar button */}
           <button
             onClick={onExportICal}
@@ -98,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Ekspor agenda ke Google Calendar / berkas iCal (.ics)"
           >
             <Download className="w-4 h-4 text-[#ffcc00]" />
-            <span className="hidden sm:inline">Ekspor ke Google Cal (.ics)</span>
+            <span className="hidden sm:inline">Ekspor (.ics)</span>
             <span className="sm:hidden">.ics</span>
           </button>
 
