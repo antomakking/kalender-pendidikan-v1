@@ -1,0 +1,6 @@
+{
+  "name": "Kalender Akademik SMK IT Ibnul Qayyim Makassar",
+  "description": "Sistem Informasi Kalender Akademik interaktif modern untuk SMK IT Ibnul Qayyim Makassar dengan tampilan tahunan, bulanan, mingguan, agenda mendatang, filter kategori, dan cetak.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
