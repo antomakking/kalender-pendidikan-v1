@@ -16,6 +16,7 @@ interface EmptyStateProps {
   description?: string;
   query?: string;
   categoryLabel?: string;
+  classLabel?: string;
   onResetFilters?: () => void;
   onAddEvent?: () => void;
   compact?: boolean;
@@ -27,6 +28,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   query,
   categoryLabel,
+  classLabel,
   onResetFilters,
   onAddEvent,
   compact = false,
@@ -64,9 +66,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       ? 'Tidak ada agenda khusus dalam 14–21 hari ke depan. Santri dan guru fokus pada Kegiatan Belajar Mengajar (KBM) reguler.'
       : query
       ? 'Silakan periksa ejaan kata kunci atau coba gunakan istilah lain seperti ujian, PTS, libur, atau nama kegiatan.'
+      : classLabel
+      ? `Tidak ditemukan kegiatan khusus untuk "${classLabel}" pada periode yang dipilih.`
       : categoryLabel
-      ? `Tidak ditemukan kegiatan untuk kategori "${categoryLabel}" pada periode yang dipilih.`
-      : 'Coba ubah filter kategori atau bersihkan pencarian untuk melihat seluruh agenda akademik sekolah.');
+      ? `Tidak ditemukan kegiatan untuk "${categoryLabel}" pada periode yang dipilih.`
+      : 'Coba ubah filter kelas/periode atau bersihkan pencarian untuk melihat seluruh agenda akademik sekolah.');
 
   if (compact) {
     return (

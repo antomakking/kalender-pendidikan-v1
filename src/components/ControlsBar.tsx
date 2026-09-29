@@ -71,18 +71,8 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
         {/* View Switcher Tabs (horizontally scrollable on small mobile screens) */}
         <div className="flex overflow-x-auto max-w-full p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start no-scrollbar">
           <button
-            onClick={() => onChangeView('month')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-              currentView === 'month'
-                ? 'bg-[#143c14] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#143c14]'
-            }`}
-          >
-            Bulanan
-          </button>
-          <button
             onClick={() => onChangeView('year')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               currentView === 'year'
                 ? 'bg-[#143c14] text-white shadow-xs'
                 : 'text-slate-600 hover:text-[#143c14]'
@@ -91,18 +81,28 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             Tahunan (12 Bulan)
           </button>
           <button
+            onClick={() => onChangeView('month')}
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+              currentView === 'month'
+                ? 'bg-[#143c14] text-white shadow-xs'
+                : 'text-slate-600 hover:text-[#143c14]'
+            }`}
+          >
+            Bulanan
+          </button>
+          <button
             onClick={() => onChangeView('week')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               currentView === 'week'
                 ? 'bg-[#143c14] text-white shadow-xs'
                 : 'text-slate-600 hover:text-[#143c14]'
             }`}
           >
-            Mingguan
+            Pekanan
           </button>
           <button
             onClick={() => onChangeView('agenda')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               currentView === 'agenda'
                 ? 'bg-[#143c14] text-white shadow-xs'
                 : 'text-slate-600 hover:text-[#143c14]'

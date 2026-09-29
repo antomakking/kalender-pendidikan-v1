@@ -1,4 +1,4 @@
-import { AcademicEvent, CategoryMeta, EventCategory } from '../types.ts';
+import { AcademicEvent, CategoryMeta, ClassLevel, EventCategory, SemesterFilter } from '../types.ts';
 
 export const CATEGORIES_CONFIG: Record<EventCategory, CategoryMeta> = {
   academic: {
@@ -62,6 +62,38 @@ export const CATEGORIES_CONFIG: Record<EventCategory, CategoryMeta> = {
     printBg: '#15803d',
   },
 };
+
+export function getEventClasses(event: AcademicEvent): ClassLevel[] {
+  if (event.targetClasses && event.targetClasses.length > 0) {
+    return event.targetClasses;
+  }
+  const text = `${event.title} ${event.audience} ${event.description}`.toUpperCase();
+  const classes: ClassLevel[] = [];
+
+  if (/\bKELAS\s*12\b|\bKELAS\s*XII\b|\bXII\b/.test(text)) {
+    classes.push('XII');
+  }
+  if (/\bKELAS\s*11\b|\bKELAS\s*XI\b|\bXI\b/.test(text)) {
+    classes.push('XI');
+  }
+  if (/\bKELAS\s*10\b|\bKELAS\s*X\b|\bX\b/.test(text)) {
+    classes.push('X');
+  }
+
+  if (classes.length > 0) {
+    const order: ClassLevel[] = ['X', 'XI', 'XII'];
+    return order.filter((c) => classes.includes(c));
+  }
+
+  return ['X', 'XI', 'XII'];
+}
+
+export function getEventCategoryMeta(eventOrCategory: AcademicEvent | EventCategory | string): CategoryMeta {
+  const categoryId = (typeof eventOrCategory === 'object' && eventOrCategory !== null)
+    ? eventOrCategory.category
+    : (eventOrCategory as EventCategory);
+  return CATEGORIES_CONFIG[categoryId] || CATEGORIES_CONFIG.academic;
+}
 
 export const MONTH_NAMES_ID = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -292,6 +324,117 @@ export function getWeekDays(centerDateStr: string, events: AcademicEvent[], toda
     });
   }
   return days;
+}
+
+/**
+ * Calculates dynamic statistics based on real calendar events and semester filter
+ */
+export function calculateAcademicStats(
+  events: AcademicEvent[],
+  semester: SemesterFilter,
+  academicYear: string,
+  todayStr: string
+) {
+  // 1. Determine semester date range
+  let startYear = 2026;
+  let endYear = 2027;
+  const parts = academicYear.split('/');
+  if (parts.length === 2) {
+    startYear = parseInt(parts[0], 10) || 2026;
+    endYear = parseInt(parts[1], 10) || 2027;
+  }
+
+  let rangeStart = `${startYear}-07-01`;
+  let rangeEnd = `${endYear}-06-30`;
+
+  if (semester === 'ganjil') {
+    rangeStart = `${startYear}-07-01`;
+    rangeEnd = `${startYear}-12-31`;
+  } else if (semester === 'genap') {
+    rangeStart = `${endYear}-01-01`;
+    rangeEnd = `${endYear}-06-30`;
+  }
+
+  // Filter events by semester
+  const filteredEvents = events.filter(
+    (e) => semester === 'all' || e.semester === semester
+  );
+
+  // Set of dates that have holidays
+  const holidayDateSet = new Set<string>();
+  events
+    .filter((e) => e.category === 'holiday')
+    .forEach((e) => {
+      const [sy, sm, sd] = e.startDate.split('-').map(Number);
+      const [ey, em, ed] = e.endDate.split('-').map(Number);
+      const cur = new Date(sy, sm - 1, sd);
+      const end = new Date(ey, em - 1, ed);
+      while (cur <= end) {
+        holidayDateSet.add(formatDateToISO(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+    });
+
+  // Calculate Effective School Days (HEB) - Monday to Friday (Hari Efektif Belajar)
+  let effectiveSchoolDays = 0;
+  let totalWeekdays = 0;
+  let totalHolidayDaysInSemester = 0;
+
+  const [rSy, rSm, rSd] = rangeStart.split('-').map(Number);
+  const [rEy, rEm, rEd] = rangeEnd.split('-').map(Number);
+  const curDay = new Date(rSy, rSm - 1, rSd);
+  const endDay = new Date(rEy, rEm - 1, rEd);
+
+  while (curDay <= endDay) {
+    const dStr = formatDateToISO(curDay);
+    const dayOfWeek = curDay.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Mon-Fri school system
+    const isHoliday = holidayDateSet.has(dStr);
+
+    if (!isWeekend) {
+      totalWeekdays++;
+      if (isHoliday) {
+        totalHolidayDaysInSemester++;
+      } else {
+        effectiveSchoolDays++;
+      }
+    } else if (isHoliday && dayOfWeek !== 0) {
+      totalHolidayDaysInSemester++;
+    }
+
+    curDay.setDate(curDay.getDate() + 1);
+  }
+
+  // 2. Real Academic / Learning Events
+  const academicEventsCount = filteredEvents.filter((e) => e.category === 'academic').length;
+  const totalEventsCount = filteredEvents.length;
+
+  // 3. Real 14 Days Ahead Events
+  const [ty, tm, td] = todayStr.split('-').map(Number);
+  const todayDate = new Date(ty, tm - 1, td);
+  const fourteenDaysLaterDate = new Date(todayDate);
+  fourteenDaysLaterDate.setDate(todayDate.getDate() + 14);
+  const fourteenDaysLaterStr = formatDateToISO(fourteenDaysLaterDate);
+
+  const upcoming14DaysEvents = events.filter((e) => {
+    return e.endDate >= todayStr && e.startDate <= fourteenDaysLaterStr;
+  });
+
+  // 4. Real Holiday Events Count & Total Holiday Days
+  const holidayEventsCount = filteredEvents.filter((e) => e.category === 'holiday').length;
+
+  return {
+    effectiveSchoolDays,
+    totalWeekdays,
+    totalHolidayDaysInSemester,
+    academicEventsCount,
+    totalEventsCount,
+    upcoming14DaysCount: upcoming14DaysEvents.length,
+    upcoming14DaysEvents,
+    holidayEventsCount,
+    rangeStart,
+    rangeEnd,
+  };
 }
 
 export function getGoogleCalendarUrl(event: AcademicEvent): string {

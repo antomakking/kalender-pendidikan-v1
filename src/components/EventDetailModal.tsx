@@ -16,6 +16,7 @@ import {
   formatDateRange,
   formatIndonesianDate,
   generateICalFile,
+  getEventClasses,
 } from '../utils/calendarUtils.ts';
 
 interface EventDetailModalProps {
@@ -79,11 +80,25 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        {/* Category Pill */}
-        <div className="mb-3">
+        {/* Category & Class Pills */}
+        <div className="mb-3 flex flex-wrap items-center gap-1.5">
           <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-semibold ${cat.bgBadge}`}>
             {cat.label}
           </span>
+          {getEventClasses(event).map((cls) => (
+            <span
+              key={cls}
+              className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                cls === 'X'
+                  ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                  : cls === 'XI'
+                  ? 'bg-sky-100 text-sky-900 border border-sky-300'
+                  : 'bg-amber-100 text-amber-950 border border-amber-300'
+              }`}
+            >
+              Kelas {cls}
+            </span>
+          ))}
         </div>
 
         {/* Event Title */}

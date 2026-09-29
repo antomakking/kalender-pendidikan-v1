@@ -23,7 +23,11 @@ import {
   generateICalFile,
   shiftEventToDate,
 } from './utils/calendarUtils.ts';
-import { isSessionUnlocked, setSessionUnlocked } from './utils/securityUtils.ts';
+import {
+  getRemainingSessionSeconds,
+  isSessionUnlocked,
+  setSessionUnlocked,
+} from './utils/securityUtils.ts';
 
 const STORAGE_KEY = 'smk_it_kalender_events_full_2627_v5';
 const TODAY_STR = formatDateToISO(new Date());
@@ -68,8 +72,8 @@ export default function App() {
     }
   }, [events]);
 
-  // 2. View & Navigation State (following real system date)
-  const [currentView, setCurrentView] = useState<CalendarView>('month');
+  // 2. View & Navigation State (Default to 'year' / Tahunan 12 Bulan)
+  const [currentView, setCurrentView] = useState<CalendarView>('year');
   const [currentYear, setCurrentYear] = useState<number>(() => new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState<number>(() => new Date().getMonth());
   const [academicYear, setAcademicYear] = useState<string>(() => {
@@ -90,20 +94,53 @@ export default function App() {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
-  // 4. Security & PIN Authentication State
+  // 4. Security & PIN Authentication State (15-Minute Periodic Expiration)
   const [isManagerUnlocked, setIsManagerUnlocked] = useState<boolean>(() => isSessionUnlocked());
+  const [sessionRemainingSeconds, setSessionRemainingSeconds] = useState<number>(() =>
+    isSessionUnlocked() ? getRemainingSessionSeconds() : 0
+  );
   const [isPinModalOpen, setIsPinModalOpen] = useState<boolean>(false);
   const [pinActionTitle, setPinActionTitle] = useState<string>('Tambah / Kelola Agenda');
   const [pendingProtectedAction, setPendingProtectedAction] = useState<(() => void) | null>(null);
 
-  // 5. Toast Notification State for Drag-and-Drop Feedback
+  // 5. Toast Notification State for Feedback
   const [toast, setToast] = useState<ToastState | null>(null);
+
+  // 15-Minute Periodic Session Auto-Logout Timer
+  useEffect(() => {
+    if (!isManagerUnlocked) {
+      setSessionRemainingSeconds(0);
+      return;
+    }
+
+    // Immediately set current remaining seconds
+    setSessionRemainingSeconds(getRemainingSessionSeconds());
+
+    const interval = setInterval(() => {
+      const remaining = getRemainingSessionSeconds();
+      setSessionRemainingSeconds(remaining);
+
+      if (remaining <= 0) {
+        setSessionUnlocked(false);
+        setIsManagerUnlocked(false);
+        setToast({
+          id: Date.now(),
+          message: 'Sesi pengelola telah berakhir otomatis (15 menit). Diperlukan PIN untuk menambah atau mengedit agenda.',
+        });
+        setTimeout(() => setToast(null), 4500);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isManagerUnlocked]);
 
   // Protected Action Executor (Requires PIN if not unlocked)
   const executeWithPinProtection = (action: () => void, title: string) => {
-    if (isManagerUnlocked || isSessionUnlocked()) {
+    if (isSessionUnlocked()) {
+      setIsManagerUnlocked(true);
       action();
     } else {
+      setIsManagerUnlocked(false);
       setPinActionTitle(title);
       setPendingProtectedAction(() => action);
       setIsPinModalOpen(true);
@@ -113,6 +150,7 @@ export default function App() {
   const handlePinSuccess = () => {
     setSessionUnlocked(true);
     setIsManagerUnlocked(true);
+    setSessionRemainingSeconds(getRemainingSessionSeconds());
     setIsPinModalOpen(false);
 
     if (pendingProtectedAction) {
@@ -122,7 +160,7 @@ export default function App() {
 
     setToast({
       id: Date.now(),
-      message: 'Otorisasi berhasil. Mode pengelola kalender aktif.',
+      message: 'Otorisasi berhasil. Mode pengelola aktif selama 15 menit.',
     });
     setTimeout(() => setToast(null), 3500);
   };
@@ -130,6 +168,7 @@ export default function App() {
   const handleLockSession = () => {
     setSessionUnlocked(false);
     setIsManagerUnlocked(false);
+    setSessionRemainingSeconds(0);
     setToast({
       id: Date.now(),
       message: 'Sesi pengelola dikunci. Diperlukan PIN untuk menambah atau mengubah agenda.',
@@ -324,6 +363,7 @@ export default function App() {
         onOpenPrint={() => setIsPrintModalOpen(true)}
         onExportICal={() => setIsExportModalOpen(true)}
         isManagerUnlocked={isManagerUnlocked}
+        remainingSeconds={sessionRemainingSeconds}
         onLockSession={handleLockSession}
         onOpenPinSettings={handleOpenPinSettings}
       />

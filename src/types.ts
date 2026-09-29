@@ -1,5 +1,8 @@
 export type EventCategory = 'academic' | 'holiday' | 'student' | 'teacher';
 
+export type ClassLevel = 'X' | 'XI' | 'XII';
+export type ClassFilter = 'all' | 'X' | 'XI' | 'XII';
+
 export interface AcademicEvent {
   id: string;
   title: string;
@@ -11,6 +14,7 @@ export interface AcademicEvent {
   description: string;
   location: string;
   audience: string; // e.g. 'Semua Siswa', 'Kelas X & XI', 'Dewan Guru', 'Orang Tua'
+  targetClasses?: ClassLevel[]; // e.g. ['X'], ['XI'], ['XII'], or ['X', 'XI', 'XII']
   academicYear: string; // '2026/2027'
   semester: 'ganjil' | 'genap';
   isOfficialHoliday?: boolean;

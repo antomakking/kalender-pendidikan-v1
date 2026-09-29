@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, ShieldCheck, X } from 'lucide-react';
-import { AcademicEvent, EventCategory } from '../types.ts';
+import { Calendar, Clock, ShieldCheck, Users, X } from 'lucide-react';
+import { AcademicEvent, ClassLevel, EventCategory } from '../types.ts';
 import { DateRangePicker } from './DateRangePicker.tsx';
+import { getEventClasses } from '../utils/calendarUtils.ts';
 
 interface EventFormModalProps {
   initialEvent?: AcademicEvent | null;
@@ -28,10 +29,28 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [startTime, setStartTime] = useState(initialEvent?.startTime || '07:30');
   const [endTime, setEndTime] = useState(initialEvent?.endTime || '15:00');
   const [category, setCategory] = useState<EventCategory>(initialEvent?.category || 'academic');
+  const [targetClasses, setTargetClasses] = useState<ClassLevel[]>(() => {
+    if (initialEvent) {
+      return getEventClasses(initialEvent);
+    }
+    return ['X', 'XI', 'XII'];
+  });
   const [audience, setAudience] = useState(initialEvent?.audience || 'Seluruh Siswa (Kelas X, XI, XII)');
   const [location, setLocation] = useState(initialEvent?.location || 'Kampus SMK IT Ibnul Qayyim Makassar');
   const [description, setDescription] = useState(initialEvent?.description || '');
   const [academicYear, setAcademicYear] = useState(initialEvent?.academicYear || '2026/2027');
+
+  const handleToggleClass = (cls: ClassLevel) => {
+    setTargetClasses((prev) => {
+      if (prev.includes(cls)) {
+        // don't allow empty if possible, but if only 1 left keep it
+        const next = prev.filter((c) => c !== cls);
+        return next.length > 0 ? next : [cls];
+      } else {
+        return [...prev, cls];
+      }
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +66,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       startTime: startTime || '08:00',
       endTime: endTime || '15:00',
       category,
+      targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
       audience: audience.trim() || 'Semua Siswa',
       location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
       description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
@@ -144,6 +164,59 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#143c14]"
               />
+            </div>
+          </div>
+
+          {/* Tingkat Kelas Sasaran */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-slate-600" />
+              <span>Tingkat Kelas yang Mengikuti Agenda *</span>
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleToggleClass('X')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                  targetClasses.includes('X')
+                    ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                {targetClasses.includes('X') ? '✓ ' : ''}Kelas X
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleToggleClass('XI')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                  targetClasses.includes('XI')
+                    ? 'bg-sky-700 text-white border-sky-800 shadow-xs'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                {targetClasses.includes('XI') ? '✓ ' : ''}Kelas XI
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleToggleClass('XII')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                  targetClasses.includes('XII')
+                    ? 'bg-[#ffcc00] text-slate-950 border-amber-500 shadow-xs font-black'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                {targetClasses.includes('XII') ? '✓ ' : ''}Kelas XII
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTargetClasses(['X', 'XI', 'XII'])}
+                className="text-[11px] text-[#143c14] hover:underline font-bold px-1.5 py-1 ml-auto cursor-pointer"
+              >
+                Pilih Semua Kelas
+              </button>
             </div>
           </div>
 

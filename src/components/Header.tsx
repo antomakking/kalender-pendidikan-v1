@@ -1,5 +1,6 @@
 import React from 'react';
-import { Calendar, Download, Lock, LockOpen, Plus, Printer, ShieldCheck } from 'lucide-react';
+import { Calendar, Clock, Download, Lock, LockOpen, Plus, Printer, ShieldCheck } from 'lucide-react';
+import { formatRemainingTime } from '../utils/securityUtils.ts';
 
 interface HeaderProps {
   onAddEvent: () => void;
@@ -7,6 +8,7 @@ interface HeaderProps {
   onOpenStandaloneExport?: () => void;
   onExportICal?: () => void;
   isManagerUnlocked?: boolean;
+  remainingSeconds?: number;
   onLockSession?: () => void;
   onOpenPinSettings?: () => void;
 }
@@ -16,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPrint,
   onExportICal,
   isManagerUnlocked = false,
+  remainingSeconds = 0,
   onLockSession,
   onOpenPinSettings,
 }) => {
@@ -51,9 +54,15 @@ export const Header: React.FC<HeaderProps> = ({
             Agenda Mendatang
           </a>
           {isManagerUnlocked && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[11px]">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[11px] shadow-2xs font-semibold"
+              title="Sesi pengelola akan logout otomatis per 15 menit untuk keamanan"
+            >
               <ShieldCheck className="w-3.5 h-3.5 text-[#ffcc00]" />
-              <span>Mode Pengelola Aktif</span>
+              <span>Mode Pengelola</span>
+              <span className="font-mono font-bold text-white bg-emerald-950/80 px-1.5 py-0.2 rounded text-[10px] border border-emerald-500/40">
+                {formatRemainingTime(remainingSeconds)}
+              </span>
             </div>
           )}
         </nav>
@@ -65,10 +74,11 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onLockSession}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-emerald-200 bg-emerald-950/60 hover:bg-emerald-900 rounded-lg transition-colors border border-emerald-500/30 whitespace-nowrap cursor-pointer shadow-2xs"
-              title="Kunci sesi pengelola agar diperlukan PIN untuk edit/tambah"
+              title={`Sesi aktif (${formatRemainingTime(remainingSeconds)} tersisa). Klik untuk kunci sesi sekarang.`}
             >
               <LockOpen className="w-3.5 h-3.5 text-[#ffcc00]" />
-              <span className="hidden xl:inline">Kunci Sesi</span>
+              <span className="hidden sm:inline">Kunci ({formatRemainingTime(remainingSeconds)})</span>
+              <span className="sm:hidden">{formatRemainingTime(remainingSeconds)}</span>
             </button>
           ) : (
             <button
