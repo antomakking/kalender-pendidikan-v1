@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#143c14"/>
+      <stop offset="100%" stop-color="#0b240b"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#ffcc00"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer Rounded Shield / Square -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+  
+  <!-- Gold Border Accent -->
+  <rect x="24" y="24" width="464" height="464" rx="90" fill="none" stroke="url(#goldGrad)" stroke-width="12" opacity="0.9"/>
+  
+  <!-- Central Institutional Shield with Calendar Grid -->
+  <g transform="translate(96, 96)">
+    <!-- Calendar Card Base -->
+    <rect x="0" y="40" width="320" height="260" rx="36" fill="#ffffff" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.35))"/>
+    
+    <!-- Header Bar on Card -->
+    <path d="M 0 76 C 0 56 16 40 36 40 L 284 40 C 304 40 320 56 320 76 L 320 110 L 0 110 Z" fill="url(#goldGrad)"/>
+    
+    <!-- Calendar Rings -->
+    <rect x="64" y="18" width="24" height="46" rx="12" fill="#143c14"/>
+    <rect x="232" y="18" width="24" height="46" rx="12" fill="#143c14"/>
+    
+    <!-- Calendar Grid Dots / Items -->
+    <circle cx="76" cy="160" r="16" fill="#143c14"/>
+    <circle cx="160" cy="160" r="16" fill="#15803d"/>
+    <circle cx="244" cy="160" r="16" fill="#dc2626"/>
+    
+    <circle cx="76" cy="220" r="16" fill="#0284c7"/>
+    <circle cx="160" cy="220" r="16" fill="#eab308"/>
+    <circle cx="244" cy="220" r="16" fill="#143c14"/>
+    
+    <!-- Badge / Graduation Hat Accent -->
+    <path d="M 160 62 L 210 82 L 160 102 L 110 82 Z" fill="#143c14"/>
+  </g>
+  
+  <!-- Islamic Crescent & Star Accent at Bottom -->
+  <path d="M 236 438 C 248 438 258 430 262 420 C 250 422 238 414 238 400 C 238 388 248 380 260 380 C 248 372 232 376 226 390 C 220 404 224 424 236 438 Z" fill="#ffcc00"/>
+  <polygon points="274,394 278,404 288,404 280,410 283,420 274,414 266,420 269,410 261,404 271,404" fill="#ffcc00"/>
+</svg>

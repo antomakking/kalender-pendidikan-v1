@@ -6,6 +6,7 @@ import { EventFormModal } from './components/EventFormModal.tsx';
 import { ExportICalModal } from './components/ExportICalModal.tsx';
 import { Header } from './components/Header.tsx';
 import { MonthView } from './components/MonthView.tsx';
+import { OfflineIndicator } from './components/OfflineIndicator.tsx';
 import { PinModal } from './components/PinModal.tsx';
 import { PrintModal } from './components/PrintModal.tsx';
 import { StandaloneExportModal } from './components/StandaloneExportModal.tsx';
@@ -576,6 +577,9 @@ export default function App() {
         events={events}
         onClose={() => setIsStandaloneModalOpen(false)}
       />
+
+      {/* Offline Connectivity Status Indicator */}
+      <OfflineIndicator />
 
       {/* Security PIN Authorization Modal */}
       <PinModal

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, Download, Lock, LockOpen, Plus, Printer, ShieldCheck } from 'lucide-react';
 import { formatRemainingTime } from '../utils/securityUtils.ts';
+import { PWAInstallButton } from './PWAInstallButton.tsx';
 
 interface HeaderProps {
   onAddEvent: () => void;
@@ -123,6 +124,9 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="md:hidden">index.html</span>
             </button>
           )}
+
+          {/* PWA Mobile & Desktop Install Prompt */}
+          <PWAInstallButton />
 
           {/* Export PDF / Print button */}
           <button
