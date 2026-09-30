@@ -94,7 +94,7 @@ export default function App() {
   const [defaultFormDate, setDefaultFormDate] = useState<string>(TODAY_STR);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
-  const [isStandaloneExportOpen, setIsStandaloneExportOpen] = useState<boolean>(false);
+  const [isStandaloneModalOpen, setIsStandaloneModalOpen] = useState<boolean>(false);
 
   // 4. Security & PIN Authentication State (15-Minute Periodic Expiration)
   const [isManagerUnlocked, setIsManagerUnlocked] = useState<boolean>(() => isSessionUnlocked());
@@ -363,7 +363,7 @@ export default function App() {
       <Header
         onAddEvent={() => handleOpenAddEvent()}
         onOpenPrint={() => setIsPrintModalOpen(true)}
-        onOpenStandaloneExport={() => setIsStandaloneExportOpen(true)}
+        onOpenStandaloneExport={() => setIsStandaloneModalOpen(true)}
         onExportICal={() => setIsExportModalOpen(true)}
         isManagerUnlocked={isManagerUnlocked}
         remainingSeconds={sessionRemainingSeconds}
@@ -566,9 +566,9 @@ export default function App() {
       />
 
       <StandaloneExportModal
-        isOpen={isStandaloneExportOpen}
+        isOpen={isStandaloneModalOpen}
         events={events}
-        onClose={() => setIsStandaloneExportOpen(false)}
+        onClose={() => setIsStandaloneModalOpen(false)}
       />
 
       {/* Security PIN Authorization Modal */}

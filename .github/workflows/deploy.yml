@@ -1,33 +1,39 @@
-name: Build and Deploy to Hostinger
+name: Deploy Kalender to Hostinger
 
 on:
   push:
     branches:
       - main
+      - master
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
+    name: Build React App & Deploy to Hostinger
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      - name: Install Dependencies
+      - name: 📦 Install Dependencies
         run: npm install
 
-      - name: Build Project
+      - name: 🚀 Build Production (Vite)
         run: npm run build
 
-      - name: Deploy via FTP
+      - name: 🌐 Deploy to Hostinger (public_html)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
           server-dir: public_html/
+          local-dir: dist/
+          dangerous-clean-slate: false
