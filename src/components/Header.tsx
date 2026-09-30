@@ -103,14 +103,22 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="sm:hidden">.ics</span>
           </button>
 
-          {/* Standalone Single File (index.html) Export Button */}
+          {/* Standalone Single File (index.html) Export Button (Protected by PIN) */}
           {onOpenStandaloneExport && (
             <button
               onClick={onOpenStandaloneExport}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-900 bg-amber-300 hover:bg-amber-400 rounded-lg transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
-              title="Unduh 1 file index.html mandiri untuk langsung dipasang di cPanel/Hostinger tanpa build"
+              title={
+                isManagerUnlocked
+                  ? 'Unduh 1 file index.html mandiri untuk Hostinger (Sesi Aktif)'
+                  : 'Unduh 1 file index.html mandiri untuk Hostinger (Perlu PIN Pengelola)'
+              }
             >
-              <Download className="w-4 h-4 text-slate-900 stroke-[2.5]" />
+              {!isManagerUnlocked ? (
+                <Lock className="w-3.5 h-3.5 text-slate-900 stroke-[2.5]" />
+              ) : (
+                <Download className="w-4 h-4 text-slate-900 stroke-[2.5]" />
+              )}
               <span className="hidden md:inline">Unduh index.html (Hostinger)</span>
               <span className="md:hidden">index.html</span>
             </button>

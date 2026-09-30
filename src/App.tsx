@@ -357,13 +357,19 @@ export default function App() {
     }, `Edit Agenda: ${event.title}`);
   };
 
+  const handleOpenStandaloneExport = () => {
+    executeWithPinProtection(() => {
+      setIsStandaloneModalOpen(true);
+    }, 'Unduh Berkas Standalone index.html (Hostinger)');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-200 selection:text-emerald-900">
       {/* Header */}
       <Header
         onAddEvent={() => handleOpenAddEvent()}
         onOpenPrint={() => setIsPrintModalOpen(true)}
-        onOpenStandaloneExport={() => setIsStandaloneModalOpen(true)}
+        onOpenStandaloneExport={handleOpenStandaloneExport}
         onExportICal={() => setIsExportModalOpen(true)}
         isManagerUnlocked={isManagerUnlocked}
         remainingSeconds={sessionRemainingSeconds}
