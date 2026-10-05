@@ -247,7 +247,7 @@ export const INITIAL_EVENTS: AcademicEvent[] = [
     id: 'evt-2627-1201',
     title: 'Sumatif Akhir Semester kls 10 dan 11',
     startDate: '2026-12-01',
-    endDate: '2026-12-05',
+    endDate: '2026-12-04',
     startTime: '07:30',
     endTime: '12:30',
     category: 'academic',

@@ -35,7 +35,7 @@ import {
   setSessionUnlocked,
 } from './utils/securityUtils.ts';
 
-const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v10';
+const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v11';
 const TODAY_STR = formatDateToISO(new Date());
 
 interface ToastState {
@@ -58,6 +58,7 @@ export default function App() {
       localStorage.removeItem('smk_it_kalender_events_full_2627_v5');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v8');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v9');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v10');
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {

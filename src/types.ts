@@ -18,6 +18,8 @@ export interface AcademicEvent {
   academicYear: string; // '2026/2027'
   semester: 'ganjil' | 'genap';
   isOfficialHoliday?: boolean;
+  excludedDates?: string[]; // Specific dates YYYY-MM-DD where event is inactive
+  excludeWeekends?: boolean; // If true, event skips Saturday and Sunday
 }
 
 export type CalendarView = 'month' | 'year' | 'week' | 'agenda';

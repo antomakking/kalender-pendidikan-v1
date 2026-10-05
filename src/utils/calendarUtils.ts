@@ -141,12 +141,59 @@ export function formatDateRange(startDateStr: string, endDateStr: string): strin
   return `${formatIndonesianDate(startDateStr)} – ${formatIndonesianDate(endDateStr)}`;
 }
 
-export function isDateInRange(targetDateStr: string, startDateStr: string, endDateStr: string): boolean {
-  return targetDateStr >= startDateStr && targetDateStr <= endDateStr;
+export const SELECTED_EXCLUDED_DATES = new Set([
+  '2026-10-10',
+  '2026-11-14',
+  '2026-12-05',
+  '2027-02-13',
+  '2027-05-08',
+  '2027-06-05',
+]);
+
+export function isDateInRange(
+  targetDateStr: string,
+  startDateStr: string,
+  endDateStr: string,
+  event?: AcademicEvent
+): boolean {
+  if (targetDateStr < startDateStr || targetDateStr > endDateStr) {
+    return false;
+  }
+
+  // Check if explicitly excluded
+  if (SELECTED_EXCLUDED_DATES.has(targetDateStr)) {
+    return false;
+  }
+
+  if (event) {
+    if (event.excludedDates && event.excludedDates.includes(targetDateStr)) {
+      return false;
+    }
+
+    // Multi-day academic and teacher events (exams, KBM, assessments) do not occur on weekends (Saturday & Sunday)
+    if (
+      startDateStr !== endDateStr &&
+      (event.category === 'academic' ||
+        event.category === 'teacher' ||
+        event.excludeWeekends ||
+        event.title.toLowerCase().includes('ujian') ||
+        event.title.toLowerCase().includes('sumatif') ||
+        event.title.toLowerCase().includes('kompetensi')) &&
+      event.category !== 'holiday'
+    ) {
+      const [y, m, d] = targetDateStr.split('-').map(Number);
+      const dayOfWeek = new Date(y, m - 1, d).getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 export function getEventsForDate(events: AcademicEvent[], dateStr: string): AcademicEvent[] {
-  return events.filter(event => isDateInRange(dateStr, event.startDate, event.endDate));
+  return events.filter(event => isDateInRange(dateStr, event.startDate, event.endDate, event));
 }
 
 export function getDaysDifference(targetDateStr: string, baseDateStr: string = '2026-09-28'): number {
