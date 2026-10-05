@@ -100,7 +100,7 @@ export const MONTH_NAMES_ID = [
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
 
-export const DAY_NAMES_ID = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Ahad'];
+export const DAY_NAMES_ID = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
 export function formatIndonesianDate(dateStr: string, options?: { withDayName?: boolean; shortMonth?: boolean }): string {
   if (!dateStr) return '';
@@ -110,7 +110,7 @@ export function formatIndonesianDate(dateStr: string, options?: { withDayName?: 
   const day = parseInt(dayStr, 10);
   const dateObj = new Date(year, month, day);
 
-  const dayName = DAY_NAMES_ID[(dateObj.getDay() + 6) % 7];
+  const dayName = DAY_NAMES_ID[dateObj.getDay()];
   const monthName = options?.shortMonth
     ? MONTH_NAMES_ID[month].slice(0, 3)
     : MONTH_NAMES_ID[month];
@@ -218,9 +218,8 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
   const lastDayOfMonth = new Date(year, month + 1, 0);
   const daysInMonth = lastDayOfMonth.getDate();
 
-  // Day of week for 1st of month: 0 (Sun) to 6 (Sat)
-  // We want Monday = 0, ..., Sunday = 6
-  const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
+  // Day of week for 1st of month: 0 (Sun / Ahad) to 6 (Sat / Sabtu)
+  const startDayOfWeek = firstDayOfMonth.getDay();
 
   const result: CalendarDayInfo[] = [];
 
@@ -235,7 +234,7 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
       dayNumber: day,
       isCurrentMonth: false,
       isToday: dateStr === todayStr,
-      isSunday: (prevDate.getDay() + 6) % 7 === 6,
+      isSunday: prevDate.getDay() === 0,
       events: getEventsForDate(events, dateStr),
     });
   }
@@ -249,7 +248,7 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
       dayNumber: d,
       isCurrentMonth: true,
       isToday: dateStr === todayStr,
-      isSunday: (curDate.getDay() + 6) % 7 === 6,
+      isSunday: curDate.getDay() === 0,
       events: getEventsForDate(events, dateStr),
     });
   }
@@ -265,7 +264,7 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
       dayNumber: d,
       isCurrentMonth: false,
       isToday: dateStr === todayStr,
-      isSunday: (nextDate.getDay() + 6) % 7 === 6,
+      isSunday: nextDate.getDay() === 0,
       events: getEventsForDate(events, dateStr),
     });
   }
@@ -304,22 +303,22 @@ export function shiftEventToDate(event: AcademicEvent, newStartDate: string): Ac
 export function getWeekDays(centerDateStr: string, events: AcademicEvent[], todayStr: string = '2026-09-28'): CalendarDayInfo[] {
   const [y, m, d] = centerDateStr.split('-').map(Number);
   const center = new Date(y, m - 1, d);
-  const dayOfWeek = (center.getDay() + 6) % 7; // 0 = Senin, 6 = Ahad
+  const dayOfWeek = center.getDay(); // 0 = Ahad, 1 = Senin, ..., 6 = Sabtu
 
-  const monday = new Date(center);
-  monday.setDate(center.getDate() - dayOfWeek);
+  const sunday = new Date(center);
+  sunday.setDate(center.getDate() - dayOfWeek);
 
   const days: CalendarDayInfo[] = [];
   for (let i = 0; i < 7; i++) {
-    const cur = new Date(monday);
-    cur.setDate(monday.getDate() + i);
+    const cur = new Date(sunday);
+    cur.setDate(sunday.getDate() + i);
     const dateStr = formatDateToISO(cur);
     days.push({
       dateStr,
       dayNumber: cur.getDate(),
       isCurrentMonth: cur.getMonth() === m - 1,
       isToday: dateStr === todayStr,
-      isSunday: i === 6,
+      isSunday: i === 0,
       events: getEventsForDate(events, dateStr),
     });
   }
@@ -333,7 +332,9 @@ export function calculateAcademicStats(
   events: AcademicEvent[],
   semester: SemesterFilter,
   academicYear: string,
-  todayStr: string
+  todayStr: string,
+  currentYear?: number,
+  currentMonth?: number
 ) {
   // 1. Determine semester date range
   let startYear = 2026;
@@ -355,14 +356,25 @@ export function calculateAcademicStats(
     rangeEnd = `${endYear}-06-30`;
   }
 
-  // Filter events by semester
-  const filteredEvents = events.filter(
+  // Filter events strictly for the selected Academic Year
+  const academicStartISO = `${startYear}-07-01`;
+  const academicEndISO = `${endYear}-06-30`;
+
+  const yearEvents = events.filter((e) => {
+    if (e.academicYear) {
+      return e.academicYear === academicYear;
+    }
+    return e.startDate >= academicStartISO && e.startDate <= academicEndISO;
+  });
+
+  // Filter events by semester within selected academic year
+  const filteredEvents = yearEvents.filter(
     (e) => semester === 'all' || e.semester === semester
   );
 
-  // Set of dates that have holidays
+  // Set of dates that have holidays within the academic year
   const holidayDateSet = new Set<string>();
-  events
+  yearEvents
     .filter((e) => e.category === 'holiday')
     .forEach((e) => {
       const [sy, sm, sd] = e.startDate.split('-').map(Number);
@@ -405,18 +417,48 @@ export function calculateAcademicStats(
     curDay.setDate(curDay.getDate() + 1);
   }
 
+  // Monthly HEB Calculation (for selected month in view)
+  let monthlyEffectiveSchoolDays = 0;
+  let monthlyTotalWeekdays = 0;
+  let monthlyHolidayDays = 0;
+
+  const targetYear = currentYear ?? startYear;
+  const targetMonth = currentMonth ?? 8; // Default September if not specified
+  const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cur = new Date(targetYear, targetMonth, d);
+    const dStr = formatDateToISO(cur);
+    const dayOfWeek = cur.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isHoliday = holidayDateSet.has(dStr);
+
+    if (!isWeekend) {
+      monthlyTotalWeekdays++;
+      if (isHoliday) {
+        monthlyHolidayDays++;
+      } else {
+        monthlyEffectiveSchoolDays++;
+      }
+    } else if (isHoliday && dayOfWeek !== 0) {
+      monthlyHolidayDays++;
+    }
+  }
+
+  const selectedMonthName = MONTH_NAMES_ID[targetMonth] || 'Bulan Dipilih';
+
   // 2. Real Academic / Learning Events
   const academicEventsCount = filteredEvents.filter((e) => e.category === 'academic').length;
   const totalEventsCount = filteredEvents.length;
 
-  // 3. Real 14 Days Ahead Events
+  // 3. Real 14 Days Ahead Events (within the selected Academic Year)
   const [ty, tm, td] = todayStr.split('-').map(Number);
   const todayDate = new Date(ty, tm - 1, td);
   const fourteenDaysLaterDate = new Date(todayDate);
   fourteenDaysLaterDate.setDate(todayDate.getDate() + 14);
   const fourteenDaysLaterStr = formatDateToISO(fourteenDaysLaterDate);
 
-  const upcoming14DaysEvents = events.filter((e) => {
+  const upcoming14DaysEvents = yearEvents.filter((e) => {
     return e.endDate >= todayStr && e.startDate <= fourteenDaysLaterStr;
   });
 
@@ -427,6 +469,11 @@ export function calculateAcademicStats(
     effectiveSchoolDays,
     totalWeekdays,
     totalHolidayDaysInSemester,
+    monthlyEffectiveSchoolDays,
+    monthlyTotalWeekdays,
+    monthlyHolidayDays,
+    selectedMonthName,
+    targetYear,
     academicEventsCount,
     totalEventsCount,
     upcoming14DaysCount: upcoming14DaysEvents.length,

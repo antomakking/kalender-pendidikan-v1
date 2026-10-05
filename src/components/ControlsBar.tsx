@@ -6,6 +6,7 @@ import {
   Clock,
   Download,
   Filter,
+  GraduationCap,
   Grid,
   History,
   List,
@@ -14,9 +15,10 @@ import {
   Sparkles,
   Tag,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
-import { CalendarView, EventCategory, SemesterFilter } from '../types.ts';
+import { CalendarView, ClassFilter, EventCategory, SemesterFilter } from '../types.ts';
 import { CATEGORIES_CONFIG, MONTH_NAMES_ID } from '../utils/calendarUtils.ts';
 
 const RECENT_SEARCHES_KEY = 'smk_recent_searches_v1';
@@ -34,12 +36,16 @@ interface ControlsBarProps {
   onChangeAcademicYear: (year: string) => void;
   semester: SemesterFilter;
   onChangeSemester: (sem: SemesterFilter) => void;
+  classFilter: ClassFilter;
+  onChangeClassFilter: (cls: ClassFilter) => void;
   categoryFilter: EventCategory | 'all';
   onChangeCategoryFilter: (cat: EventCategory | 'all') => void;
   searchQuery: string;
   onChangeSearchQuery: (query: string) => void;
   eventsCountByCategory: Record<EventCategory | 'all', number>;
+  eventsCountByClass?: Record<ClassFilter, number>;
   onOpenExportICal?: () => void;
+  onOpenHebMatrix?: () => void;
 }
 
 export const ControlsBar: React.FC<ControlsBarProps> = ({
@@ -53,12 +59,16 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
   onChangeAcademicYear,
   semester,
   onChangeSemester,
+  classFilter,
+  onChangeClassFilter,
   categoryFilter,
   onChangeCategoryFilter,
   searchQuery,
   onChangeSearchQuery,
   eventsCountByCategory,
+  eventsCountByClass,
   onOpenExportICal,
+  onOpenHebMatrix,
 }) => {
   // Recent Searches State
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
@@ -229,12 +239,13 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             </span>
           </div>
 
-          {/* Academic Year & Semester Selectors */}
-          <div className="flex items-center gap-1.5 ml-auto">
+          {/* Academic Year, Semester & Class Level Selectors */}
+          <div className="flex items-center gap-1.5 ml-auto flex-wrap sm:flex-nowrap">
             <select
               value={academicYear}
               onChange={(e) => onChangeAcademicYear(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              title="Pilih Tahun Ajaran"
             >
               <option value="2025/2026">TA 2025/2026</option>
               <option value="2026/2027">TA 2026/2027</option>
@@ -244,18 +255,98 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             <select
               value={semester}
               onChange={(e) => onChangeSemester(e.target.value as SemesterFilter)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[125px] sm:max-w-none truncate"
+              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[115px] sm:max-w-none truncate"
+              title="Pilih Semester"
             >
               <option value="all">Semua Smt</option>
               <option value="ganjil">Ganjil (Jul-Des)</option>
               <option value="genap">Genap (Jan-Jun)</option>
             </select>
+
+            <select
+              value={classFilter}
+              onChange={(e) => onChangeClassFilter(e.target.value as ClassFilter)}
+              className="text-xs bg-slate-50 border border-emerald-300/80 rounded-lg px-2 py-1.5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[125px] sm:max-w-none truncate"
+              title="Filter Tingkat Kelas"
+            >
+              <option value="all">🎓 Semua Kelas</option>
+              <option value="X">Kelas X {eventsCountByClass ? `(${eventsCountByClass.X})` : ''}</option>
+              <option value="XI">Kelas XI {eventsCountByClass ? `(${eventsCountByClass.XI})` : ''}</option>
+              <option value="XII">Kelas XII {eventsCountByClass ? `(${eventsCountByClass.XII})` : ''}</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Search & Category Filter Buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t border-slate-100">
+      {/* Quick Class Level Pills & Category Filter Bar */}
+      <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
+        {/* Class Filter Pills */}
+        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0">
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-800" />
+              Tingkat:
+            </span>
+            <button
+              type="button"
+              onClick={() => onChangeClassFilter('all')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                classFilter === 'all'
+                  ? 'bg-slate-800 text-white shadow-xs'
+                  : 'text-slate-600 bg-slate-100 hover:bg-slate-200'
+              }`}
+            >
+              Semua Kelas
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeClassFilter('X')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                classFilter === 'X'
+                  ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400/50'
+                  : 'text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+              }`}
+            >
+              Kelas X {eventsCountByClass ? `(${eventsCountByClass.X})` : ''}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeClassFilter('XI')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                classFilter === 'XI'
+                  ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400/50'
+                  : 'text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+              }`}
+            >
+              Kelas XI {eventsCountByClass ? `(${eventsCountByClass.XI})` : ''}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeClassFilter('XII')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                classFilter === 'XII'
+                  ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400/50'
+                  : 'text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+              }`}
+            >
+              Kelas XII {eventsCountByClass ? `(${eventsCountByClass.XII})` : ''}
+            </button>
+
+            {onOpenHebMatrix && (
+              <button
+                type="button"
+                onClick={onOpenHebMatrix}
+                className="ml-auto px-3 py-1 rounded-lg text-xs font-black text-[#143c14] bg-[#ffcc00] hover:bg-[#eab308] border border-amber-400 shadow-xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+                title="Lihat Matriks Kurikulum, Alokasi JP & Hari Efektif Belajar per Kelas"
+              >
+                <span>📊 Matriks JP & HEB</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search & Category Filter Buttons */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
         {/* Search input with Recent Searches Dropdown & Export .ics shortcut */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <div ref={searchContainerRef} className="relative flex-1 md:w-80">
@@ -427,6 +518,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             Penilaian & Rapor ({eventsCountByCategory.teacher})
           </button>
         </div>
+      </div>
       </div>
     </section>
   );

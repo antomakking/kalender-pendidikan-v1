@@ -35,8 +35,8 @@ export function usePWAInstall() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Register service worker if supported
-    if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'test') {
+    // Register service worker only in production environment
+    if ('serviceWorker' in navigator && import.meta.env.PROD) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('./sw.js')

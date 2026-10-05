@@ -250,7 +250,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                         {DAY_NAMES_ID.map((dName, idx) => (
                           <span
                             key={dName}
-                            className={`py-0.5 rounded-xs ${idx === 6 ? 'bg-[#dc2626] text-white font-extrabold' : 'bg-[#143c14] text-white'}`}
+                            className={`py-0.5 rounded-xs ${idx === 0 ? 'bg-[#dc2626] text-white font-extrabold' : 'bg-[#143c14] text-white'}`}
                           >
                             {dName.slice(0, 3)}
                           </span>

@@ -122,20 +122,24 @@ export const YearView: React.FC<YearViewProps> = ({
   onSelectDate,
   onJumpToMonth,
 }) => {
-  // 12 months of Academic Year: Juli 2026 to Juni 2027
+  // Compute the 12 months dynamically for the selected Academic Year (July Year 1 to June Year 2)
+  const [startYearStr, endYearStr] = academicYear.split('/');
+  const startYear = parseInt(startYearStr, 10) || 2025;
+  const endYear = parseInt(endYearStr, 10) || startYear + 1;
+
   const academicMonths = [
-    { year: 2026, month: 6, label: 'Juli 2026', semester: 'Ganjil' },
-    { year: 2026, month: 7, label: 'Agustus 2026', semester: 'Ganjil' },
-    { year: 2026, month: 8, label: 'September 2026', semester: 'Ganjil' },
-    { year: 2026, month: 9, label: 'Oktober 2026', semester: 'Ganjil' },
-    { year: 2026, month: 10, label: 'November 2026', semester: 'Ganjil' },
-    { year: 2026, month: 11, label: 'Desember 2026', semester: 'Ganjil' },
-    { year: 2027, month: 0, label: 'Januari 2027', semester: 'Genap' },
-    { year: 2027, month: 1, label: 'Februari 2027', semester: 'Genap' },
-    { year: 2027, month: 2, label: 'Maret 2027', semester: 'Genap' },
-    { year: 2027, month: 3, label: 'April 2027', semester: 'Genap' },
-    { year: 2027, month: 4, label: 'Mei 2027', semester: 'Genap' },
-    { year: 2027, month: 5, label: 'Juni 2027', semester: 'Genap' },
+    { year: startYear, month: 6, label: `Juli ${startYear}`, semester: 'Ganjil' },
+    { year: startYear, month: 7, label: `Agustus ${startYear}`, semester: 'Ganjil' },
+    { year: startYear, month: 8, label: `September ${startYear}`, semester: 'Ganjil' },
+    { year: startYear, month: 9, label: `Oktober ${startYear}`, semester: 'Ganjil' },
+    { year: startYear, month: 10, label: `November ${startYear}`, semester: 'Ganjil' },
+    { year: startYear, month: 11, label: `Desember ${startYear}`, semester: 'Ganjil' },
+    { year: endYear, month: 0, label: `Januari ${endYear}`, semester: 'Genap' },
+    { year: endYear, month: 1, label: `Februari ${endYear}`, semester: 'Genap' },
+    { year: endYear, month: 2, label: `Maret ${endYear}`, semester: 'Genap' },
+    { year: endYear, month: 3, label: `April ${endYear}`, semester: 'Genap' },
+    { year: endYear, month: 4, label: `Mei ${endYear}`, semester: 'Genap' },
+    { year: endYear, month: 5, label: `Juni ${endYear}`, semester: 'Genap' },
   ];
 
   return (
@@ -155,7 +159,7 @@ export const YearView: React.FC<YearViewProps> = ({
           const firstDay = new Date(year, month, 1);
           const lastDay = new Date(year, month + 1, 0);
           const daysInMonth = lastDay.getDate();
-          const startDayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0
+          const startDayOfWeek = firstDay.getDay(); // Sunday / Ahad = 0
 
           // Filter events occurring in this month
           const monthStartISO = `${year}-${String(month + 1).padStart(2, '0')}-01`;
@@ -188,15 +192,15 @@ export const YearView: React.FC<YearViewProps> = ({
                   </button>
                 </div>
 
-                {/* Day Letters: Green for Mon-Sat, Red for Ahad */}
+                {/* Day Letters: Red for Ahad, Green for Senin-Sabtu */}
                 <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black mb-1.5">
+                  <span className="bg-[#dc2626] text-white py-0.5 rounded-xs">A</span>
                   <span className="bg-[#143c14] text-white py-0.5 rounded-xs">S</span>
                   <span className="bg-[#143c14] text-white py-0.5 rounded-xs">S</span>
                   <span className="bg-[#143c14] text-white py-0.5 rounded-xs">R</span>
                   <span className="bg-[#143c14] text-white py-0.5 rounded-xs">K</span>
                   <span className="bg-[#143c14] text-white py-0.5 rounded-xs">J</span>
                   <span className="bg-[#143c14] text-white py-0.5 rounded-xs">S</span>
-                  <span className="bg-[#dc2626] text-white py-0.5 rounded-xs">A</span>
                 </div>
 
                 {/* Mini Day Cells */}
@@ -213,7 +217,7 @@ export const YearView: React.FC<YearViewProps> = ({
                     const dateStr = formatDateToISO(dateObj);
                     const dayEvents = getEventsForDate(events, dateStr);
                     const isToday = dateStr === todayStr;
-                    const isSunday = (dateObj.getDay() + 6) % 7 === 6;
+                    const isSunday = dateObj.getDay() === 0;
 
                     // Determine the visual color style for this day based on its event in this month
                     const primaryEvent = dayEvents[0];

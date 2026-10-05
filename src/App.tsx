@@ -5,6 +5,9 @@ import { EventDetailModal } from './components/EventDetailModal.tsx';
 import { EventFormModal } from './components/EventFormModal.tsx';
 import { ExportICalModal } from './components/ExportICalModal.tsx';
 import { Header } from './components/Header.tsx';
+import { HebMatrixModal } from './components/HebMatrixModal.tsx';
+import { NotificationModal } from './components/NotificationModal.tsx';
+import { useEventNotifications } from './hooks/useEventNotifications.ts';
 import { MonthView } from './components/MonthView.tsx';
 import { OfflineIndicator } from './components/OfflineIndicator.tsx';
 import { PinModal } from './components/PinModal.tsx';
@@ -16,13 +19,14 @@ import { WeekView } from './components/WeekView.tsx';
 import { YearView } from './components/YearView.tsx';
 import { EmptyState } from './components/EmptyState.tsx';
 import { INITIAL_EVENTS } from './data/seedEvents.ts';
-import { AcademicEvent, CalendarView, EventCategory, SemesterFilter } from './types.ts';
+import { AcademicEvent, CalendarView, ClassFilter, EventCategory, SemesterFilter } from './types.ts';
 import {
   CATEGORIES_CONFIG,
   formatDateRange,
   formatDateToISO,
   formatIndonesianDate,
   generateICalFile,
+  getEventClasses,
   shiftEventToDate,
 } from './utils/calendarUtils.ts';
 import {
@@ -31,7 +35,7 @@ import {
   setSessionUnlocked,
 } from './utils/securityUtils.ts';
 
-const STORAGE_KEY = 'smk_it_kalender_events_full_2627_v5';
+const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v9';
 const TODAY_STR = formatDateToISO(new Date());
 
 interface ToastState {
@@ -51,6 +55,8 @@ export default function App() {
       localStorage.removeItem('smk_it_kalender_events_real_v2');
       localStorage.removeItem('smk_it_kalender_events_real_v3');
       localStorage.removeItem('smk_it_kalender_events_full_v4');
+      localStorage.removeItem('smk_it_kalender_events_full_2627_v5');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v8');
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -74,17 +80,13 @@ export default function App() {
     }
   }, [events]);
 
-  // 2. View & Navigation State (Default to 'year' / Tahunan 12 Bulan)
+  // 2. View & Navigation State (Default to TA 2026/2027 & Year View)
   const [currentView, setCurrentView] = useState<CalendarView>('year');
-  const [currentYear, setCurrentYear] = useState<number>(() => new Date().getFullYear());
-  const [currentMonth, setCurrentMonth] = useState<number>(() => new Date().getMonth());
-  const [academicYear, setAcademicYear] = useState<string>(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    return m >= 6 ? `${y}/${y + 1}` : `${y - 1}/${y}`;
-  });
+  const [academicYear, setAcademicYear] = useState<string>('2026/2027');
+  const [currentYear, setCurrentYear] = useState<number>(2026);
+  const [currentMonth, setCurrentMonth] = useState<number>(6); // Juli 2026 (Awal TA 2026/2027)
   const [semester, setSemester] = useState<SemesterFilter>('all');
+  const [classFilter, setClassFilter] = useState<ClassFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<EventCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -96,6 +98,20 @@ export default function App() {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isStandaloneModalOpen, setIsStandaloneModalOpen] = useState<boolean>(false);
+  const [isHebMatrixOpen, setIsHebMatrixOpen] = useState<boolean>(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState<boolean>(false);
+
+  // 4. Browser H-1 Event Notification System Hook
+  const {
+    permission: notificationPermission,
+    requestPermission,
+    tomorrowEvents,
+    sendTestNotification,
+  } = useEventNotifications({
+    events,
+    todayStr: TODAY_STR,
+    onSelectEvent: (evt) => setSelectedEvent(evt),
+  });
 
   // 4. Security & PIN Authentication State (15-Minute Periodic Expiration)
   const [isManagerUnlocked, setIsManagerUnlocked] = useState<boolean>(() => isSessionUnlocked());
@@ -185,11 +201,29 @@ export default function App() {
     setIsPinModalOpen(true);
   };
 
-  // 6. Filtering Logic
+  // 6. Filtering Logic (Dynamically filtered by Academic Year, Semester, Class, and Category)
   const filteredEvents = useMemo(() => {
+    const [startYearStr, endYearStr] = academicYear.split('/');
+    const startYear = parseInt(startYearStr, 10) || 2025;
+    const endYear = parseInt(endYearStr, 10) || startYear + 1;
+    const academicStartISO = `${startYear}-07-01`;
+    const academicEndISO = `${endYear}-06-30`;
+
     return events.filter((evt) => {
+      // Academic Year Filter
+      const matchYear = evt.academicYear
+        ? evt.academicYear === academicYear
+        : evt.startDate >= academicStartISO && evt.startDate <= academicEndISO;
+      if (!matchYear) return false;
+
       // Semester filter
       if (semester !== 'all' && evt.semester !== semester) return false;
+
+      // Class Level filter (Kelas X, XI, XII)
+      if (classFilter !== 'all') {
+        const eventClasses = getEventClasses(evt);
+        if (!eventClasses.includes(classFilter)) return false;
+      }
 
       // Category filter
       if (categoryFilter !== 'all' && evt.category !== categoryFilter) return false;
@@ -206,11 +240,26 @@ export default function App() {
 
       return true;
     });
-  }, [events, semester, categoryFilter, searchQuery]);
+  }, [events, academicYear, semester, classFilter, categoryFilter, searchQuery]);
 
-  // Event counts for category buttons
+  // Event counts for category & class buttons (strictly scoped to selected academic year)
   const eventsCountByCategory = useMemo(() => {
-    const baseList = events.filter((e) => semester === 'all' || e.semester === semester);
+    const [startYearStr, endYearStr] = academicYear.split('/');
+    const startYear = parseInt(startYearStr, 10) || 2025;
+    const endYear = parseInt(endYearStr, 10) || startYear + 1;
+    const academicStartISO = `${startYear}-07-01`;
+    const academicEndISO = `${endYear}-06-30`;
+
+    const baseList = events.filter((e) => {
+      const matchYear = e.academicYear
+        ? e.academicYear === academicYear
+        : e.startDate >= academicStartISO && e.startDate <= academicEndISO;
+      
+      const matchSemester = semester === 'all' || e.semester === semester;
+      const matchClass = classFilter === 'all' || getEventClasses(e).includes(classFilter);
+      return matchYear && matchSemester && matchClass;
+    });
+
     return {
       all: baseList.length,
       academic: baseList.filter((e) => e.category === 'academic').length,
@@ -218,7 +267,29 @@ export default function App() {
       student: baseList.filter((e) => e.category === 'student').length,
       teacher: baseList.filter((e) => e.category === 'teacher').length,
     };
-  }, [events, semester]);
+  }, [events, academicYear, semester, classFilter]);
+
+  const eventsCountByClass = useMemo(() => {
+    const [startYearStr, endYearStr] = academicYear.split('/');
+    const startYear = parseInt(startYearStr, 10) || 2025;
+    const endYear = parseInt(endYearStr, 10) || startYear + 1;
+    const academicStartISO = `${startYear}-07-01`;
+    const academicEndISO = `${endYear}-06-30`;
+
+    const baseList = events.filter((e) => {
+      const matchYear = e.academicYear
+        ? e.academicYear === academicYear
+        : e.startDate >= academicStartISO && e.startDate <= academicEndISO;
+      return matchYear && (semester === 'all' || e.semester === semester);
+    });
+
+    return {
+      all: baseList.length,
+      X: baseList.filter((e) => getEventClasses(e).includes('X')).length,
+      XI: baseList.filter((e) => getEventClasses(e).includes('XI')).length,
+      XII: baseList.filter((e) => getEventClasses(e).includes('XII')).length,
+    };
+  }, [events, academicYear, semester]);
 
   // 7. Navigation Handlers
   const handleNavigateMonth = (delta: number) => {
@@ -235,14 +306,21 @@ export default function App() {
       setCurrentMonth(nextMonth);
       setCurrentYear(nextYear);
     } else if (currentView === 'year') {
-      setCurrentYear((y) => y + delta);
+      const [startYearStr] = academicYear.split('/');
+      const currentStart = parseInt(startYearStr, 10) || 2025;
+      const targetStart = currentStart + delta;
+      handleChangeAcademicYear(`${targetStart}/${targetStart + 1}`);
     }
   };
 
   const handleGoToToday = () => {
     const now = new Date();
-    setCurrentYear(now.getFullYear());
-    setCurrentMonth(now.getMonth());
+    const curY = now.getFullYear();
+    const curM = now.getMonth();
+    setCurrentYear(curY);
+    setCurrentMonth(curM);
+    const targetTA = curM >= 6 ? `${curY}/${curY + 1}` : `${curY - 1}/${curY}`;
+    setAcademicYear(targetTA);
   };
 
   const handleChangeAcademicYear = (newYear: string) => {
@@ -250,7 +328,7 @@ export default function App() {
     const startYear = parseInt(newYear.split('/')[0], 10);
     if (!isNaN(startYear)) {
       setCurrentYear(startYear);
-      setCurrentMonth(6); // Juli (Awal Semester Gasal)
+      setCurrentMonth(6); // Juli (Bulan Awal Semester Gasal)
     }
   };
 
@@ -368,10 +446,13 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-200 selection:text-emerald-900">
       {/* Header */}
       <Header
+        academicYear={academicYear}
         onAddEvent={() => handleOpenAddEvent()}
         onOpenPrint={() => setIsPrintModalOpen(true)}
         onOpenStandaloneExport={handleOpenStandaloneExport}
         onExportICal={() => setIsExportModalOpen(true)}
+        onOpenNotificationModal={() => setIsNotificationModalOpen(true)}
+        tomorrowEventsCount={tomorrowEvents.length}
         isManagerUnlocked={isManagerUnlocked}
         remainingSeconds={sessionRemainingSeconds}
         onLockSession={handleLockSession}
@@ -386,6 +467,8 @@ export default function App() {
           academicYear={academicYear}
           semester={semester}
           todayStr={TODAY_STR}
+          currentYear={currentYear}
+          currentMonth={currentMonth}
           onResetData={handleResetData}
         />
 
@@ -401,12 +484,16 @@ export default function App() {
           onChangeAcademicYear={handleChangeAcademicYear}
           semester={semester}
           onChangeSemester={setSemester}
+          classFilter={classFilter}
+          onChangeClassFilter={setClassFilter}
           categoryFilter={categoryFilter}
           onChangeCategoryFilter={setCategoryFilter}
           searchQuery={searchQuery}
           onChangeSearchQuery={setSearchQuery}
           eventsCountByCategory={eventsCountByCategory}
+          eventsCountByClass={eventsCountByClass}
           onOpenExportICal={() => setIsExportModalOpen(true)}
+          onOpenHebMatrix={() => setIsHebMatrixOpen(true)}
         />
 
         {/* Calendar Grid & Sidebar Columns */}
@@ -427,6 +514,7 @@ export default function App() {
                     setSearchQuery('');
                     setCategoryFilter('all');
                     setSemester('all');
+                    setClassFilter('all');
                   }}
                   onAddEvent={() => handleOpenAddEvent()}
                 />
@@ -576,6 +664,22 @@ export default function App() {
         isOpen={isStandaloneModalOpen}
         events={events}
         onClose={() => setIsStandaloneModalOpen(false)}
+      />
+
+      <HebMatrixModal
+        isOpen={isHebMatrixOpen}
+        academicYear={academicYear}
+        onClose={() => setIsHebMatrixOpen(false)}
+      />
+
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        permission={notificationPermission}
+        onRequestPermission={requestPermission}
+        onSendTestNotification={sendTestNotification}
+        tomorrowEvents={tomorrowEvents}
+        onSelectEvent={(evt) => setSelectedEvent(evt)}
       />
 
       {/* Offline Connectivity Status Indicator */}

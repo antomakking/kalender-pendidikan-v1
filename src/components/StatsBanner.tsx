@@ -8,6 +8,8 @@ interface StatsBannerProps {
   academicYear: string;
   semester: SemesterFilter;
   todayStr: string;
+  currentYear?: number;
+  currentMonth?: number;
   onResetData?: () => void;
 }
 
@@ -16,11 +18,13 @@ export const StatsBanner: React.FC<StatsBannerProps> = ({
   academicYear,
   semester,
   todayStr,
+  currentYear,
+  currentMonth,
 }) => {
   // Compute 100% real dynamic stats based on actual recorded events in the calendar
   const stats = useMemo(() => {
-    return calculateAcademicStats(events, semester, academicYear, todayStr);
-  }, [events, semester, academicYear, todayStr]);
+    return calculateAcademicStats(events, semester, academicYear, todayStr, currentYear, currentMonth);
+  }, [events, semester, academicYear, todayStr, currentYear, currentMonth]);
 
   return (
     <section className="bg-white border-2 border-[#143c14]/20 rounded-2xl p-5 shadow-xs overflow-hidden">
@@ -57,24 +61,37 @@ export const StatsBanner: React.FC<StatsBannerProps> = ({
       </div>
 
       {/* Metric Cards Grid - 100% Real Live Computed Data */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-        {/* 1. Real HEB (Hari Efektif Belajar) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 pt-1">
+        {/* 1. HEB Bulan Dipilih/Aktif */}
+        <div className="p-3.5 bg-emerald-50/90 rounded-xl border border-emerald-300 shadow-2xs col-span-2 sm:col-span-1">
+          <span className="text-xs text-emerald-950 font-bold block truncate" title={`Hari Efektif Belajar ${stats.selectedMonthName} ${stats.targetYear}`}>
+            HEB {stats.selectedMonthName} {stats.targetYear}
+          </span>
+          <div className="text-2xl font-black text-emerald-900 mt-1 tabular-nums">
+            {stats.monthlyEffectiveSchoolDays} <span className="text-xs font-normal text-emerald-700">Hari</span>
+          </div>
+          <span className="text-[11px] text-emerald-800 mt-0.5 block truncate" title={`Dari ${stats.monthlyTotalWeekdays} hari aktif kalender (${stats.monthlyHolidayDays} libur)`}>
+            {stats.monthlyTotalWeekdays} Hari Kerja ({stats.monthlyHolidayDays} Libur)
+          </span>
+        </div>
+
+        {/* 2. Real HEB (Hari Efektif Belajar) Semester/TA */}
         <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
           <span className="text-xs text-slate-500 font-semibold block">
-            Hari Efektif Belajar (HEB)
+            HEB {semester === 'all' ? '1 Tahun' : `Semester ${semester.toUpperCase()}`}
           </span>
           <div className="text-2xl font-black text-[#143c14] mt-1 tabular-nums">
             {stats.effectiveSchoolDays} <span className="text-xs font-normal text-slate-500">Hari</span>
           </div>
           <span className="text-[11px] text-slate-500 mt-0.5 block truncate" title={`Dari ${stats.totalWeekdays} hari aktif kalender`}>
-            {semester === 'all' ? 'Total TA 2026/2027' : `Semester ${semester.toUpperCase()}`}
+            {semester === 'all' ? `Total TA ${academicYear}` : `Smt ${semester.toUpperCase()}`}
           </span>
         </div>
 
-        {/* 2. Real Total Agenda KBM & Pembelajaran */}
+        {/* 3. Real Total Agenda KBM & Pembelajaran */}
         <div className="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200">
           <span className="text-xs text-amber-950 font-bold block">
-            Total Agenda KBM & Pembelajaran
+            Total Agenda KBM
           </span>
           <div className="text-2xl font-black text-amber-950 mt-1 tabular-nums">
             {stats.totalEventsCount}{' '}
@@ -85,10 +102,10 @@ export const StatsBanner: React.FC<StatsBannerProps> = ({
           </span>
         </div>
 
-        {/* 3. Real Agenda 14 Hari ke Depan */}
+        {/* 4. Real Agenda 14 Hari ke Depan */}
         <div className="p-3.5 bg-sky-50/70 rounded-xl border border-sky-200">
           <span className="text-xs text-sky-950 font-bold block">
-            Agenda 14 Hari ke Depan
+            Agenda 14 Hari
           </span>
           <div className="text-2xl font-black text-[#0284c7] mt-1 tabular-nums">
             {stats.upcoming14DaysCount}{' '}
@@ -96,15 +113,15 @@ export const StatsBanner: React.FC<StatsBannerProps> = ({
           </div>
           <span className="text-[11px] text-sky-700 mt-0.5 block truncate">
             {stats.upcoming14DaysCount > 0
-              ? `${stats.upcoming14DaysEvents[0]?.title.slice(0, 22)}...`
-              : 'Tidak ada agenda terdekat'}
+              ? `${stats.upcoming14DaysEvents[0]?.title.slice(0, 18)}...`
+              : 'Tidak ada agenda'}
           </span>
         </div>
 
-        {/* 4. Real Hari Libur Resmi & Nasional */}
+        {/* 5. Real Hari Libur Resmi & Nasional */}
         <div className="p-3.5 bg-rose-50/70 rounded-xl border border-rose-200">
           <span className="text-xs text-rose-950 font-bold block">
-            Hari Libur Resmi & Nasional
+            Hari Libur Resmi
           </span>
           <div className="text-2xl font-black text-[#dc2626] mt-1 tabular-nums">
             {stats.holidayEventsCount}{' '}

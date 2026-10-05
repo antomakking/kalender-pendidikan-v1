@@ -40,6 +40,11 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
 
   <style>
     * { box-sizing: border-box; }
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+      width: 100%;
+    }
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       margin: 0;
@@ -76,6 +81,10 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
       </div>
 
       <div class="flex items-center gap-2">
+        <button onclick="requestH1Notification()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-950 bg-[#ffcc00] hover:bg-[#eab308] rounded-lg transition-colors shadow-2xs cursor-pointer" title="Pengingat Notifikasi Browser H-1">
+          <svg class="w-4 h-4 text-slate-950 fill-slate-950" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22a2 2 0 002-2H10a2 2 0 002 2zm6-6V11a6 6 0 00-12 0v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span class="hidden sm:inline">Notifikasi H-1</span>
+        </button>
         <button onclick="window.print()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20 cursor-pointer shadow-2xs">
           <svg class="w-4 h-4 text-[#ffcc00]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
           <span class="hidden sm:inline">Cetak PDF</span>
@@ -435,7 +444,7 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
         const yr = mIdx >= 6 ? 2026 : 2027;
         const mName = MONTHS[mIdx];
         const daysInMonth = new Date(yr, mIdx + 1, 0).getDate();
-        const firstDay = (new Date(yr, mIdx, 1).getDay() + 6) % 7;
+        const firstDay = new Date(yr, mIdx, 1).getDay();
 
         html += '<div class="bg-slate-50/70 border border-slate-200 rounded-xl p-3">' +
           '<div class="flex items-center justify-between font-bold text-xs text-slate-900 pb-2 mb-2 border-b border-slate-200">' +
@@ -443,7 +452,7 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
             '<span class="text-[10px] text-slate-500 font-mono">' + (mIdx >= 6 ? 'Smt Ganjil' : 'Smt Genap') + '</span>' +
           '</div>' +
           '<div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 mb-1">' +
-            '<span>Sn</span><span>Sl</span><span>Rb</span><span>Km</span><span>Jm</span><span>Sb</span><span class="text-rose-600">Ah</span>' +
+            '<span class="text-rose-600">Ah</span><span>Sn</span><span>Sl</span><span>Rb</span><span>Km</span><span>Jm</span><span>Sb</span>' +
           '</div>' +
           '<div class="grid grid-cols-7 gap-1 text-[11px] text-center">';
 
@@ -454,7 +463,7 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
           const dateStr = yr + '-' + String(mIdx + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
           const evts = filtered.filter(function(e) { return dateStr >= e.startDate && dateStr <= e.endDate; });
           const has = evts.length > 0;
-          const solid = has ? CATS[evts[0].category].solid : ((d + firstDay - 1) % 7 === 6 ? 'text-rose-600 hover:bg-slate-200' : 'text-slate-700 hover:bg-slate-200');
+          const solid = has ? CATS[evts[0].category].solid : ((d + firstDay - 1) % 7 === 0 ? 'text-rose-600 hover:bg-slate-200' : 'text-slate-700 hover:bg-slate-200');
 
           html += '<div onclick="' + (has ? "showDetail('" + evts[0].id + "')" : "") + '" class="h-6 flex items-center justify-center rounded text-xs font-bold cursor-pointer transition-all ' + solid + '">' + d + '</div>';
         }
@@ -466,10 +475,10 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
 
     function renderMonthView(filtered) {
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const firstDay = (new Date(currentYear, currentMonth, 1).getDay() + 6) % 7;
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
       let html = '<div class="space-y-3">' +
         '<div class="grid grid-cols-7 text-center font-bold text-xs text-slate-500 pb-2 border-b border-slate-100">' +
-          '<span>Senin</span><span>Selasa</span><span>Rabu</span><span>Kamis</span><span>Jumat</span><span>Sabtu</span><span class="text-rose-600">Ahad</span>' +
+          '<span class="text-rose-600">Ahad</span><span>Senin</span><span>Selasa</span><span>Rabu</span><span>Kamis</span><span>Jumat</span><span>Sabtu</span>' +
         '</div>' +
         '<div class="grid grid-cols-7 gap-1.5 sm:gap-2 auto-rows-fr">';
 
@@ -711,6 +720,23 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
       closeAddEventModal();
       form.reset();
       save();
+    }
+
+    function requestH1Notification() {
+      if (!('Notification' in window)) {
+        alert('Browser Anda belum mendukung Notification API.');
+        return;
+      }
+      Notification.requestPermission().then(function(perm) {
+        if (perm === 'granted') {
+          new Notification('🔔 Pengingat Notifikasi H-1 Aktif', {
+            body: 'Uji coba berhasil! Perangkat Anda akan otomatis menampilkan pengingat 1 hari sebelum agenda dimulai.',
+            icon: './icon.svg'
+          });
+        } else {
+          alert('Notifikasi diblokir. Izinkan notifikasi di pengaturan browser Anda.');
+        }
+      });
     }
 
     window.addEventListener('DOMContentLoaded', init);
