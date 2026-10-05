@@ -1,12 +1,12 @@
 // Security & PIN Management for SMK IT Ibnul Qayyim Calendar
-const PIN_STORAGE_KEY = 'smk_it_admin_pin_v1';
+const PIN_STORAGE_KEY = 'smk_it_admin_pin_v2';
 const SESSION_UNLOCK_KEY = 'smk_it_admin_session_unlocked_v1';
 const SESSION_EXPIRY_KEY = 'smk_it_admin_session_expiry_v1';
 const RECOVERY_EMAIL_KEY = 'smk_it_admin_recovery_email_v1';
 const CUSTOM_QA_STORAGE_KEY = 'smk_it_admin_custom_qa_v1';
 const RECOVERY_OTP_KEY = 'smk_it_admin_recovery_otp_v1';
 
-export const DEFAULT_PIN = '1234';
+export const DEFAULT_PIN = '6789';
 export const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 Minutes
 
 // Master Administrative Emails

@@ -22,8 +22,8 @@ import { CalendarView, ClassFilter, EventCategory, SemesterFilter } from '../typ
 import { CATEGORIES_CONFIG, MONTH_NAMES_ID } from '../utils/calendarUtils.ts';
 
 const RECENT_SEARCHES_KEY = 'smk_recent_searches_v1';
-const DEFAULT_RECENT_SEARCHES = ['Ujian Tasmi\'', 'Sumatif Akhir', 'PKL', 'Libur', 'P5'];
-const POPULAR_SHORTCUTS = ['Ujian', 'PKL', 'Libur', 'Rapor', 'P5', 'Class Meeting'];
+const DEFAULT_RECENT_SEARCHES = ['Ujian Tasmi\'', 'Sumatif Akhir', 'PKL', 'Libur', 'Rapor'];
+const POPULAR_SHORTCUTS = ['Ujian', 'PKL', 'Libur', 'Rapor', 'Class Meeting', 'Tasmi\''];
 
 interface ControlsBarProps {
   currentView: CalendarView;

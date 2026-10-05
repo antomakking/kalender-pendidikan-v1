@@ -358,12 +358,9 @@ export const PinModal: React.FC<PinModalProps> = ({
                   </button>
                 </div>
 
-                {/* Footer options: Default reminder, Change PIN, and Forgot PIN */}
+                {/* Footer options: Change PIN, and Forgot PIN */}
                 <div className="pt-3 border-t border-slate-100 space-y-2 text-[11px]">
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span>
-                      PIN Default: <strong className="text-slate-800 font-bold">{DEFAULT_PIN}</strong>
-                    </span>
+                  <div className="flex items-center justify-end">
                     <button
                       type="button"
                       onClick={() => {
@@ -419,7 +416,7 @@ export const PinModal: React.FC<PinModalProps> = ({
                   required
                   value={currentPinInput}
                   onChange={(e) => setCurrentPinInput(e.target.value)}
-                  placeholder="Masukkan PIN lama (default: 1234)"
+                  placeholder="Masukkan PIN lama saat ini..."
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#143c14]"
                 />
               </div>

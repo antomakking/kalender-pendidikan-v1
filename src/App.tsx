@@ -35,7 +35,7 @@ import {
   setSessionUnlocked,
 } from './utils/securityUtils.ts';
 
-const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v9';
+const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v10';
 const TODAY_STR = formatDateToISO(new Date());
 
 interface ToastState {
@@ -57,18 +57,26 @@ export default function App() {
       localStorage.removeItem('smk_it_kalender_events_full_v4');
       localStorage.removeItem('smk_it_kalender_events_full_2627_v5');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v8');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v9');
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          // Filter out any P5 items
+          return parsed.filter(
+            (e: AcademicEvent) =>
+              !e.title.toLowerCase().includes('p5') &&
+              !e.description.toLowerCase().includes('p5')
+          );
         }
       }
     } catch (e) {
       console.error('Failed to load events from storage', e);
     }
-    return INITIAL_EVENTS;
+    return INITIAL_EVENTS.filter(
+      (e) => !e.title.toLowerCase().includes('p5') && !e.description.toLowerCase().includes('p5')
+    );
   });
 
   // Sync to localStorage
