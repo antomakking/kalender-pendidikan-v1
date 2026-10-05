@@ -174,15 +174,17 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         {/* Action Buttons */}
         <div className="mt-6 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-3">
           <button
+            type="button"
             onClick={() => {
-              if (confirm(`Hapus kegiatan "${event.title}" dari kalender akademik?`)) {
+              if (window.confirm(`Yakin ingin menghapus agenda "${event.title}" dari kalender akademik?`)) {
                 onDelete(event.id);
                 onClose();
               }
             }}
-            className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-semibold px-2 py-1 rounded transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-bold rounded-lg border border-rose-200 transition-colors cursor-pointer"
+            title="Hapus agenda ini secara permanen"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4 text-rose-600 shrink-0" />
             <span>Hapus</span>
           </button>
 

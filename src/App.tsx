@@ -396,16 +396,25 @@ export default function App() {
   };
 
   const handleDeleteEvent = (id: string) => {
-    executeWithPinProtection(() => {
-      const eventToDelete = events.find((e) => e.id === id);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-      setSelectedEvent(null);
-      setToast({
-        id: Date.now(),
-        message: eventToDelete ? `Agenda "${eventToDelete.title}" telah dihapus.` : 'Agenda berhasil dihapus.',
-      });
-      setTimeout(() => setToast(null), 3000);
-    }, 'Hapus Agenda');
+    const eventToDelete = events.find((e) => e.id === id);
+    if (!eventToDelete) return;
+
+    setEvents((prev) => {
+      const updated = prev.filter((e) => e.id !== id);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (err) {
+        console.error('Failed to update storage after deletion:', err);
+      }
+      return updated;
+    });
+
+    setSelectedEvent(null);
+    setToast({
+      id: Date.now(),
+      message: `Agenda "${eventToDelete.title}" berhasil dihapus.`,
+    });
+    setTimeout(() => setToast(null), 3000);
   };
 
   const handleResetData = () => {
