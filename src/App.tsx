@@ -633,14 +633,14 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div>
             <p className="font-semibold text-slate-800">
-              © 2026 SMK IT Ibnul Qayyim Makassar · Sistem Informasi Kalender Akademik
+              © 2026 SMK IT Ibnul Qayyim Makassar · Yayasan Pendidikan Islam Ibnul Qayyim Sudiang Makassar
             </p>
             <p className="text-slate-400 mt-0.5">
-              Konsentrasi Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)
+              NPSN: 70031494 · Konsentrasi Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)
             </p>
           </div>
           <p className="text-slate-400 text-[11px]">
-            Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242
+            Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242 · Telp: 0811 4411 432
           </p>
         </div>
       </footer>

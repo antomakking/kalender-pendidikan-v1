@@ -1,10 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// Plugin to ensure server.ws safely handles send calls when HMR is disabled in AI Studio
+// Plugin to ensure server.ws and environments safely handle send calls when HMR is disabled in AI Studio
 const safeWsPlugin = (): Plugin => ({
   name: 'safe-ws-plugin',
   configureServer(server) {
@@ -18,6 +18,22 @@ const safeWsPlugin = (): Plugin => ({
       } as unknown as typeof server.ws;
     } else if (typeof server.ws.send !== 'function') {
       server.ws.send = () => {};
+    }
+
+    // Guard server.environments hot send
+    if (server.environments) {
+      for (const env of Object.values(server.environments)) {
+        if (env && !env.hot) {
+          (env as unknown as { hot: unknown }).hot = {
+            send: () => {},
+            close: () => {},
+            on: () => {},
+            off: () => {},
+          };
+        } else if (env?.hot && typeof env.hot.send !== 'function') {
+          env.hot.send = () => {};
+        }
+      }
     }
   },
 });
@@ -155,6 +171,7 @@ export default defineConfig(() => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      forwardConsole: false,
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

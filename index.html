@@ -2,6 +2,39 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Safeguard against unhandled websocket send errors when HMR is disconnected
+      (function() {
+        const origConsoleError = console.error;
+        console.error = function(...args) {
+          if (args.length > 0) {
+            const first = String(args[0] || '');
+            const second = args[1] ? String(args[1] || '') : '';
+            if (
+              (first.includes('[vite]') && (first.includes('send') || second.includes('send'))) ||
+              first.includes("reading 'send'") ||
+              second.includes("reading 'send'")
+            ) {
+              return; // Silently suppress disconnected HMR socket send errors
+            }
+          }
+          return origConsoleError.apply(console, args);
+        };
+      })();
+
+      window.addEventListener('error', function(e) {
+        if (e && e.message && e.message.includes("reading 'send'")) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e && e.reason && String(e.reason).includes("reading 'send'")) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>Kalender Akademik SMK IT Ibnul Qayyim Makassar</title>
     <meta name="description" content="Sistem Informasi Kalender Akademik interaktif modern untuk SMK IT Ibnul Qayyim Makassar dengan tampilan tahunan, bulanan, mingguan, agenda mendatang, filter kategori, dan cetak." />

@@ -198,16 +198,16 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           {/* 1. KOP SURAT RESMI */}
           <div className="border-b-2 border-slate-900 pb-2.5 mb-3 text-center">
             <h4 className="text-[11px] sm:text-xs font-bold tracking-widest text-slate-700 uppercase">
-              Yayasan Pendidikan Islam Ibnul Qayyim Makassar
+              Yayasan Pendidikan Islam Ibnul Qayyim Sudiang Makassar
             </h4>
             <h2 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">
               SMK IT IBNUL QAYYIM MAKASSAR
             </h2>
             <p className="text-[10.5px] text-slate-600 font-medium">
-              NPSN: 69989821 · Terakreditasi A · Program Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)
+              NPSN: 70031494 · Terakreditasi A · Program Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)
             </p>
             <p className="text-[9.5px] text-slate-500">
-              Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242 · Telp: (0411) 895-4321
+              Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242 · Telp: 0811 4411 432
             </p>
           </div>
 
@@ -451,9 +451,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               <p className="font-bold text-slate-900">Kepala SMK IT Ibnul Qayyim Makassar</p>
               <div className="h-12"></div>
               <p className="font-extrabold text-slate-900 underline tracking-wide">
-                Drs. H. Muhammad Arsyad, M.Pd.
+                Anto, S.E.I., M.E., Gr., MCF.
               </p>
-              <p className="text-[9px] text-slate-500">NIP. 19740815 199903 1 004</p>
+              <p className="text-[9px] text-slate-500">NIP. 19840615 20201001 01 04</p>
             </div>
           </div>
         </div>
