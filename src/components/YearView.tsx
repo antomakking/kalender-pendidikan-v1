@@ -1,5 +1,6 @@
 import React from 'react';
-import { AcademicEvent } from '../types.ts';
+import { Flag } from 'lucide-react';
+import { AcademicEvent, EventCategory } from '../types.ts';
 import {
   CATEGORIES_CONFIG,
   formatDateToISO,
@@ -14,7 +15,7 @@ interface YearViewProps {
   todayStr: string;
   searchQuery?: string;
   onSelectEvent: (event: AcademicEvent) => void;
-  onSelectDate: (dateStr: string) => void;
+  onSelectDate: (dateStr: string, category?: EventCategory) => void;
   onJumpToMonth: (year: number, month: number) => void;
 }
 
@@ -218,6 +219,7 @@ export const YearView: React.FC<YearViewProps> = ({
                     const dayEvents = getEventsForDate(events, dateStr);
                     const isToday = dateStr === todayStr;
                     const isSunday = dateObj.getDay() === 0;
+                    const hasHoliday = dayEvents.some((e) => e.category === 'holiday' || e.isOfficialHoliday);
 
                     // Determine the visual color style for this day based on its event in this month
                     const primaryEvent = dayEvents[0];
@@ -237,20 +239,25 @@ export const YearView: React.FC<YearViewProps> = ({
                         }}
                         title={
                           dayEvents.length > 0
-                            ? dayEvents.map((e) => e.title).join(' • ')
+                            ? `${hasHoliday ? '🚩 [LIBUR NASIONAL] ' : ''}${dayEvents.map((e) => e.title).join(' • ')}`
                             : dateStr
                         }
-                        className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer transition-transform ${
+                        className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer transition-transform relative ${
                           isToday
                             ? 'bg-[#143c14] text-white font-black ring-2 ring-[#ffcc00]'
+                            : hasHoliday
+                            ? 'bg-red-600 text-white font-black ring-2 ring-red-500 shadow-sm scale-[0.98] border border-red-700'
                             : eventStyle
                             ? `${eventStyle.bgSolid} font-bold scale-[0.98] shadow-2xs`
                             : isSunday
-                            ? 'text-[#dc2626] font-bold hover:bg-rose-50'
+                            ? 'text-red-600 font-bold hover:bg-rose-50'
                             : 'text-slate-700 hover:bg-slate-100 font-medium'
                         }`}
                       >
                         <span className="leading-tight">{day}</span>
+                        {hasHoliday && !isToday && (
+                          <span className="w-1.5 h-1.5 bg-white rounded-full mt-0.5 shadow-2xs" />
+                        )}
                       </div>
                     );
                   })}
@@ -262,14 +269,15 @@ export const YearView: React.FC<YearViewProps> = ({
                 </div>
 
                 {/* Official Holiday Footnotes in Red */}
-                {monthEvents.filter((e) => e.category === 'holiday').length > 0 && (
-                  <div className="mt-2 pt-1.5 border-t border-rose-100 text-[9.5px] text-[#dc2626] font-bold leading-tight space-y-0.5">
+                {monthEvents.filter((e) => e.category === 'holiday' || e.isOfficialHoliday).length > 0 && (
+                  <div className="mt-2 pt-1.5 border-t border-rose-100 text-[9.5px] text-red-600 font-bold leading-tight space-y-0.5">
                     {monthEvents
-                      .filter((e) => e.category === 'holiday')
-                      .slice(0, 2)
+                      .filter((e) => e.category === 'holiday' || e.isOfficialHoliday)
+                      .slice(0, 3)
                       .map((h) => (
-                        <div key={h.id} className="truncate" title={h.title}>
-                          • {parseInt(h.startDate.slice(8), 10)} {MONTH_NAMES_ID[month]}: {h.title}
+                        <div key={h.id} className="truncate flex items-center gap-1" title={h.title}>
+                          <Flag className="w-2.5 h-2.5 fill-red-600 text-red-600 shrink-0" />
+                          <span className="truncate">{parseInt(h.startDate.slice(8), 10)} {MONTH_NAMES_ID[month]}: {h.title}</span>
                         </div>
                       ))}
                   </div>

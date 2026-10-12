@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, Download, ExternalLink, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, Download, ExternalLink, Flag, MapPin, Users } from 'lucide-react';
 import { AcademicEvent } from '../types.ts';
 import {
   CATEGORIES_CONFIG,
@@ -96,6 +96,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
 
             <div className="grid grid-cols-1 gap-2.5">
               {monthEvents.map((evt) => {
+                const isHoliday = evt.category === 'holiday' || evt.isOfficialHoliday;
                 const cat = CATEGORIES_CONFIG[evt.category] || CATEGORIES_CONFIG.academic;
                 const isOngoing = evt.startDate <= todayStr && evt.endDate >= todayStr;
 
@@ -103,16 +104,23 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                   <div
                     key={evt.id}
                     onClick={() => onSelectEvent(evt)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer bg-white hover:border-[#143c14] hover:shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isOngoing ? 'ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50/10' : 'border-slate-200'
+                    className={`p-4 rounded-xl border transition-all cursor-pointer hover:shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      isHoliday
+                        ? 'border-2 border-red-600 bg-red-50/50 ring-1 ring-red-400/30 hover:border-red-700'
+                        : isOngoing
+                        ? 'ring-2 ring-emerald-500 border-emerald-300 bg-emerald-50/10 hover:border-[#143c14]'
+                        : 'border-slate-200 bg-white hover:border-[#143c14]'
                     }`}
                   >
                     <div className="space-y-1.5 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs ${cat.bgSolid}`}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1 ${
+                            isHoliday ? 'bg-red-600' : cat.bgSolid
+                          }`}
                         >
-                          {cat.label}
+                          {isHoliday && <Flag className="w-2.5 h-2.5 fill-white text-white" />}
+                          <span>{isHoliday ? 'Libur Nasional' : cat.label}</span>
                         </span>
 
                         <span className="text-xs font-bold text-slate-700">

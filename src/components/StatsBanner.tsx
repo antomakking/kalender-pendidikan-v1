@@ -62,16 +62,27 @@ export const StatsBanner: React.FC<StatsBannerProps> = ({
 
       {/* Metric Cards Grid - 100% Real Live Computed Data */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 pt-1">
-        {/* 1. HEB Bulan Dipilih/Aktif */}
+        {/* 1. HEB Bulan yang Sedang Berjalan (Otomatis) */}
         <div className="p-3.5 bg-emerald-50/90 rounded-xl border border-emerald-300 shadow-2xs col-span-2 sm:col-span-1">
-          <span className="text-xs text-emerald-950 font-bold block truncate" title={`Hari Efektif Belajar ${stats.selectedMonthName} ${stats.targetYear}`}>
-            HEB {stats.selectedMonthName} {stats.targetYear}
-          </span>
-          <div className="text-2xl font-black text-emerald-900 mt-1 tabular-nums">
-            {stats.monthlyEffectiveSchoolDays} <span className="text-xs font-normal text-emerald-700">Hari</span>
+          <div className="flex items-center justify-between gap-1 mb-0.5">
+            <span
+              className="text-xs text-emerald-950 font-bold block truncate"
+              title={`Hari Efektif Belajar Bulan Berjalan: ${stats.runningMonthName} ${stats.runningYear}`}
+            >
+              HEB {stats.runningMonthName} {stats.runningYear}
+            </span>
+            <span className="text-[10px] bg-emerald-200/90 text-emerald-900 font-bold px-1.5 py-0.5 rounded-md shrink-0 border border-emerald-300/60 leading-none">
+              Bulan Berjalan
+            </span>
           </div>
-          <span className="text-[11px] text-emerald-800 mt-0.5 block truncate" title={`Dari ${stats.monthlyTotalWeekdays} hari aktif kalender (${stats.monthlyHolidayDays} libur)`}>
-            {stats.monthlyTotalWeekdays} Hari Kerja ({stats.monthlyHolidayDays} Libur)
+          <div className="text-2xl font-black text-emerald-900 mt-1 tabular-nums">
+            {stats.runningMonthEffectiveSchoolDays} <span className="text-xs font-normal text-emerald-700">Hari</span>
+          </div>
+          <span
+            className="text-[11px] text-emerald-800 mt-0.5 block truncate"
+            title={`Dari ${stats.runningMonthTotalWeekdays} hari kerja kalender (${stats.runningMonthHolidayDays} libur)`}
+          >
+            {stats.runningMonthTotalWeekdays} Hari Kerja ({stats.runningMonthHolidayDays} Libur)
           </span>
         </div>
 

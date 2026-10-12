@@ -5,6 +5,7 @@ import {
   Download,
   Edit,
   ExternalLink,
+  Flag,
   MapPin,
   Trash2,
   Users,
@@ -24,6 +25,7 @@ interface EventDetailModalProps {
   onClose: () => void;
   onEdit: (event: AcademicEvent) => void;
   onDelete: (id: string) => void;
+  onToggleOfficialHoliday?: (event: AcademicEvent) => void;
 }
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({
@@ -31,6 +33,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   onClose,
   onEdit,
   onDelete,
+  onToggleOfficialHoliday,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,6 +82,21 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         >
           <X className="w-5 h-5" />
         </button>
+
+        {/* National Holiday Prominent Alert Banner if holiday */}
+        {(event.category === 'holiday' || event.isOfficialHoliday) && (
+          <div className="mb-3.5 p-3 rounded-xl border-2 border-rose-500 bg-rose-50/90 flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2 text-rose-900 font-black text-xs uppercase tracking-wider">
+              <div className="w-6 h-6 rounded-md bg-rose-600 text-white flex items-center justify-center">
+                <Flag className="w-3.5 h-3.5 fill-current" />
+              </div>
+              <span>Hari Libur Nasional Resmi</span>
+            </div>
+            <span className="text-[10.5px] font-bold text-rose-700 bg-white border border-rose-300 px-2 py-0.5 rounded-full shadow-2xs">
+              Bebas KBM
+            </span>
+          </div>
+        )}
 
         {/* Category & Class Pills */}
         <div className="mb-3 flex flex-wrap items-center gap-1.5">
@@ -189,6 +207,33 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           </button>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (onToggleOfficialHoliday) {
+                  onToggleOfficialHoliday(event);
+                } else {
+                  onEdit({
+                    ...event,
+                    category: (event.isOfficialHoliday || event.category === 'holiday') ? 'academic' : 'holiday',
+                    isOfficialHoliday: !(event.isOfficialHoliday || event.category === 'holiday'),
+                  });
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors border cursor-pointer shadow-2xs ${
+                event.isOfficialHoliday || event.category === 'holiday'
+                  ? 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
+                  : 'text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border-rose-300'
+              }`}
+              title={
+                event.isOfficialHoliday || event.category === 'holiday'
+                  ? 'Hapus status libur nasional dari kegiatan ini'
+                  : 'Tandai tanggal ini sebagai Hari Libur Nasional (border merah)'
+              }
+            >
+              <Flag className={`w-3.5 h-3.5 ${event.isOfficialHoliday || event.category === 'holiday' ? 'fill-rose-700 text-rose-700' : 'fill-current'}`} />
+              <span>{event.isOfficialHoliday || event.category === 'holiday' ? 'Hapus Libur' : 'Tandai Libur'}</span>
+            </button>
             <button
               onClick={() => onEdit(event)}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"

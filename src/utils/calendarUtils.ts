@@ -464,13 +464,52 @@ export function calculateAcademicStats(
     curDay.setDate(curDay.getDate() + 1);
   }
 
-  // Monthly HEB Calculation (for selected month in view)
+  // 1. Current Running Month (Bulan yang Sedang Berjalan) HEB Calculation
+  const [tYearNum, tMonthNum] = (todayStr || '').split('-').map(Number);
+  const realCurrentMonth = !isNaN(tMonthNum) ? tMonthNum - 1 : new Date().getMonth();
+  const realCurrentYear = !isNaN(tYearNum) ? tYearNum : new Date().getFullYear();
+
+  // Align runningYear with the selected academic year if needed
+  let runningYear = realCurrentYear;
+  if (academicYear.includes('/')) {
+    const isFirstSemester = realCurrentMonth >= 6; // Juli - Desember (Gasal)
+    runningYear = isFirstSemester ? startYear : endYear;
+  }
+  const runningMonth = realCurrentMonth;
+  const runningDaysInMonth = new Date(runningYear, runningMonth + 1, 0).getDate();
+
+  let runningMonthEffectiveSchoolDays = 0;
+  let runningMonthTotalWeekdays = 0;
+  let runningMonthHolidayDays = 0;
+
+  for (let d = 1; d <= runningDaysInMonth; d++) {
+    const cur = new Date(runningYear, runningMonth, d);
+    const dStr = formatDateToISO(cur);
+    const dayOfWeek = cur.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isHoliday = holidayDateSet.has(dStr);
+
+    if (!isWeekend) {
+      runningMonthTotalWeekdays++;
+      if (isHoliday) {
+        runningMonthHolidayDays++;
+      } else {
+        runningMonthEffectiveSchoolDays++;
+      }
+    } else if (isHoliday && dayOfWeek !== 0) {
+      runningMonthHolidayDays++;
+    }
+  }
+
+  const runningMonthName = MONTH_NAMES_ID[runningMonth] || 'Bulan Berjalan';
+
+  // 2. Selected Month HEB Calculation (for active view)
   let monthlyEffectiveSchoolDays = 0;
   let monthlyTotalWeekdays = 0;
   let monthlyHolidayDays = 0;
 
-  const targetYear = currentYear ?? startYear;
-  const targetMonth = currentMonth ?? 8; // Default September if not specified
+  const targetYear = currentYear ?? runningYear;
+  const targetMonth = currentMonth ?? runningMonth;
   const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
 
   for (let d = 1; d <= daysInMonth; d++) {
@@ -494,11 +533,11 @@ export function calculateAcademicStats(
 
   const selectedMonthName = MONTH_NAMES_ID[targetMonth] || 'Bulan Dipilih';
 
-  // 2. Real Academic / Learning Events
+  // 3. Real Academic / Learning Events
   const academicEventsCount = filteredEvents.filter((e) => e.category === 'academic').length;
   const totalEventsCount = filteredEvents.length;
 
-  // 3. Real 14 Days Ahead Events (within the selected Academic Year)
+  // 4. Real 14 Days Ahead Events (within the selected Academic Year)
   const [ty, tm, td] = todayStr.split('-').map(Number);
   const todayDate = new Date(ty, tm - 1, td);
   const fourteenDaysLaterDate = new Date(todayDate);
@@ -509,7 +548,7 @@ export function calculateAcademicStats(
     return e.endDate >= todayStr && e.startDate <= fourteenDaysLaterStr;
   });
 
-  // 4. Real Holiday Events Count & Total Holiday Days
+  // 5. Real Holiday Events Count & Total Holiday Days
   const holidayEventsCount = filteredEvents.filter((e) => e.category === 'holiday').length;
 
   return {
@@ -521,6 +560,13 @@ export function calculateAcademicStats(
     monthlyHolidayDays,
     selectedMonthName,
     targetYear,
+    targetMonth,
+    runningMonth,
+    runningYear,
+    runningMonthName,
+    runningMonthEffectiveSchoolDays,
+    runningMonthTotalWeekdays,
+    runningMonthHolidayDays,
     academicEventsCount,
     totalEventsCount,
     upcoming14DaysCount: upcoming14DaysEvents.length,

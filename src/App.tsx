@@ -97,12 +97,17 @@ export default function App() {
     }
   }, [events]);
 
-  // 2. View & Navigation State (Default to TA 2026/2027 & Year View)
+  // 2. View & Navigation State (Default to Current Running Period & Year View)
   const [currentView, setCurrentView] = useState<CalendarView>('year');
   const [viewDirection, setViewDirection] = useState<number>(1);
-  const [academicYear, setAcademicYear] = useState<string>('2026/2027');
-  const [currentYear, setCurrentYear] = useState<number>(2026);
-  const [currentMonth, setCurrentMonth] = useState<number>(6); // Juli 2026 (Awal TA 2026/2027)
+  const [academicYear, setAcademicYear] = useState<string>(() => {
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = now.getMonth();
+    return curM >= 6 ? `${curY}/${curY + 1}` : `${curY - 1}/${curY}`;
+  });
+  const [currentYear, setCurrentYear] = useState<number>(() => new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState<number>(() => new Date().getMonth());
   const [semester, setSemester] = useState<SemesterFilter>('all');
   const [classFilter, setClassFilter] = useState<ClassFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<EventCategory | 'all'>('all');
@@ -345,8 +350,18 @@ export default function App() {
     setAcademicYear(newYear);
     const startYear = parseInt(newYear.split('/')[0], 10);
     if (!isNaN(startYear)) {
-      setCurrentYear(startYear);
-      setCurrentMonth(6); // Juli (Bulan Awal Semester Gasal)
+      const now = new Date();
+      const nowYear = now.getFullYear();
+      const nowMonth = now.getMonth();
+      const nowTA = nowMonth >= 6 ? `${nowYear}/${nowYear + 1}` : `${nowYear - 1}/${nowYear}`;
+
+      if (newYear === nowTA) {
+        setCurrentYear(nowYear);
+        setCurrentMonth(nowMonth);
+      } else {
+        setCurrentYear(startYear);
+        setCurrentMonth(6); // Juli (Bulan Awal Semester Gasal)
+      }
     }
   };
 

@@ -262,10 +262,10 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
   <footer class="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 mt-12 no-print">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
       <div>
-        <p class="font-semibold text-slate-800">© 2026 SMK IT Ibnul Qayyim Makassar · Sistem Informasi Kalender Akademik</p>
-        <p class="text-slate-400 mt-0.5">Konsentrasi Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)</p>
+        <p class="font-semibold text-slate-800">© 2026 SMK IT Ibnul Qayyim Makassar · Yayasan Pendidikan Islam Ibnul Qayyim Sudiang Makassar</p>
+        <p class="text-slate-400 mt-0.5">NPSN: 70031494 · Konsentrasi Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)</p>
       </div>
-      <p class="text-slate-400 text-[11px]">Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242</p>
+      <p class="text-slate-400 text-[11px]">Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242 · Telp: 0811 4411 432</p>
     </div>
   </footer>
 

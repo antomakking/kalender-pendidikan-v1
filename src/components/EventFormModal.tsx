@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, ShieldCheck, Users, X } from 'lucide-react';
+import { Calendar, Clock, Flag, ShieldCheck, Users, X } from 'lucide-react';
 import { AcademicEvent, ClassLevel, EventCategory } from '../types.ts';
 import { DateRangePicker } from './DateRangePicker.tsx';
 import { getEventClasses } from '../utils/calendarUtils.ts';
@@ -7,6 +7,7 @@ import { getEventClasses } from '../utils/calendarUtils.ts';
 interface EventFormModalProps {
   initialEvent?: AcademicEvent | null;
   defaultDate?: string;
+  defaultCategory?: EventCategory;
   isOpen: boolean;
   onClose: () => void;
   onSave: (event: AcademicEvent) => void;
@@ -15,6 +16,7 @@ interface EventFormModalProps {
 export const EventFormModal: React.FC<EventFormModalProps> = ({
   initialEvent,
   defaultDate = '2026-09-28',
+  defaultCategory = 'academic',
   isOpen,
   onClose,
   onSave,
@@ -28,7 +30,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [endDate, setEndDate] = useState(initialEvent?.endDate || defaultDate);
   const [startTime, setStartTime] = useState(initialEvent?.startTime || '07:30');
   const [endTime, setEndTime] = useState(initialEvent?.endTime || '15:00');
-  const [category, setCategory] = useState<EventCategory>(initialEvent?.category || 'academic');
+  const [category, setCategory] = useState<EventCategory>(
+    initialEvent?.category || defaultCategory || 'academic'
+  );
+  const [isOfficialHoliday, setIsOfficialHoliday] = useState<boolean>(
+    initialEvent?.isOfficialHoliday ?? (defaultCategory === 'holiday' || initialEvent?.category === 'holiday')
+  );
   const [targetClasses, setTargetClasses] = useState<ClassLevel[]>(() => {
     if (initialEvent) {
       return getEventClasses(initialEvent);
@@ -65,14 +72,14 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       endDate: endDate < startDate ? startDate : endDate,
       startTime: startTime || '08:00',
       endTime: endTime || '15:00',
-      category,
+      category: isOfficialHoliday ? 'holiday' : category,
       targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
       audience: audience.trim() || 'Semua Siswa',
       location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
       description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
       academicYear,
       semester,
-      isOfficialHoliday: category === 'holiday',
+      isOfficialHoliday,
     };
 
     onSave(newOrUpdatedEvent);
@@ -124,6 +131,67 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               placeholder="Contoh: Penilaian Akhir Semester (PAS) Ganjil Mandiri"
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#143c14] text-xs sm:text-sm font-medium"
             />
+          </div>
+
+          {/* Quick Mark as National Holiday Card */}
+          <div
+            className={`p-3 rounded-xl border-2 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+              isOfficialHoliday
+                ? 'border-rose-500 bg-rose-50/90 text-rose-950 ring-2 ring-rose-400/30 shadow-xs'
+                : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-rose-300'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                  isOfficialHoliday
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                <Flag className="w-4 h-4 fill-current" />
+              </div>
+              <div>
+                <div className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                  <span className={isOfficialHoliday ? 'text-rose-900' : 'text-slate-800'}>
+                    Status Hari Libur Nasional
+                  </span>
+                  {isOfficialHoliday && (
+                    <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.2 rounded-full font-bold">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  Ditandai border warna merah menyala & ikon bendera resmi pada seluruh kalender.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isOfficialHoliday) {
+                  setIsOfficialHoliday(false);
+                  if (category === 'holiday') {
+                    setCategory('academic');
+                  }
+                } else {
+                  setIsOfficialHoliday(true);
+                  setCategory('holiday');
+                  if (!title.trim() || title === 'Agenda Baru') {
+                    setTitle('Libur Nasional: ');
+                  }
+                }
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 self-start sm:self-auto ${
+                isOfficialHoliday
+                  ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-xs ring-1 ring-rose-700'
+                  : 'bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 shadow-2xs'
+              }`}
+            >
+              {isOfficialHoliday ? '✓ Ditandai Libur Nasional' : '🚩 Tandai Libur Nasional'}
+            </button>
           </div>
 
           {/* Visual Date Range Picker Component */}
