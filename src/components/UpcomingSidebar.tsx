@@ -65,7 +65,8 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
 
   // Dynamic Upcoming Events (next 45 days or ongoing today)
   const upcomingList = useMemo(() => {
-    const today = new Date(todayStr);
+    const [ty, tm, td] = todayStr.split('-').map(Number);
+    const today = new Date(ty, tm - 1, td);
     const limitDate = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
     const limitStr = formatDateToISO(limitDate);
 

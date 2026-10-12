@@ -490,7 +490,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
         <div className="grid grid-cols-1 gap-2.5 w-full">
           {displayedMobileDays.map((dayInfo) => {
             const { dateStr, dayNumber, isToday, isSunday, events: dayEvents } = dayInfo;
-            const dayOfWeekIdx = (new Date(dateStr).getDay() + 6) % 7;
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dayOfWeekIdx = new Date(y, m - 1, d).getDay();
             const dayName = DAY_NAMES_ID[dayOfWeekIdx] || '';
             const hasEvents = dayEvents.length > 0;
 

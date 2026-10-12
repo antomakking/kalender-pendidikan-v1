@@ -582,7 +582,7 @@
 
                     const firstDayOfMonth = new Date(year, month, 1);
                     const daysInMonth = new Date(year, month + 1, 0).getDate();
-                    const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Monday = 0
+                    const startDayOfWeek = firstDayOfMonth.getDay(); // Sunday / Ahad = 0
 
                     return (
                       <div key={`${year}-${month}`} className="bg-white border-2 border-slate-200 rounded-xl p-3 shadow-xs flex flex-col justify-start">
@@ -594,8 +594,8 @@
 
                         {/* Day Names */}
                         <div className="grid grid-cols-7 gap-1 text-center font-extrabold text-[9px] mb-1">
-                          {['Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb', 'Ah'].map((d, idx) => (
-                            <div key={d} className={`py-0.5 rounded ${idx === 6 ? 'text-[#dc2626]' : 'text-[#143c14]'}`}>{d}</div>
+                          {['Ah', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'].map((d, idx) => (
+                            <div key={d} className={`py-0.5 rounded ${idx === 0 ? 'text-[#dc2626]' : 'text-[#143c14]'}`}>{d}</div>
                           ))}
                         </div>
 
@@ -609,7 +609,7 @@
                             const dayNum = i + 1;
                             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                             const dateObj = new Date(year, month, dayNum);
-                            const isSunday = (dateObj.getDay() + 6) % 7 === 6;
+                            const isSunday = dateObj.getDay() === 0;
                             const dayEvts = monthEvents.filter(e => dateStr >= e.startDate && dateStr <= e.endDate);
                             const primaryEvt = dayEvts[0];
                             const evtStyle = primaryEvt ? getEventColorInMonth(primaryEvt, monthEvents) : null;

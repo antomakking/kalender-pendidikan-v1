@@ -47,8 +47,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     const lastDayOfMonth = new Date(viewYear, viewMonth + 1, 0);
 
     const totalDays = lastDayOfMonth.getDate();
-    // Monday is index 0 in Indonesia
-    const startingDayIndex = (firstDayOfMonth.getDay() + 6) % 7;
+    // Sunday (Ahad) is index 0 in DAY_NAMES_ID (Ahad, Senin, Selasa, Rabu, Kamis, Jumat, Sabtu)
+    const startingDayIndex = firstDayOfMonth.getDay();
 
     const cells: Array<{
       dateStr: string;
@@ -142,11 +142,11 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   // Quick preset shortcuts
   const applyPreset = (daysDuration: number) => {
-    const base = startDate ? new Date(startDate) : new Date();
+    const [y, m, d] = (startDate || todayStr).split('-').map(Number);
+    const base = new Date(y, m - 1, d);
     const startStr = formatDateToISO(base);
 
-    const endObj = new Date(base);
-    endObj.setDate(endObj.getDate() + (daysDuration - 1));
+    const endObj = new Date(y, m - 1, d + (daysDuration - 1));
     const endStr = formatDateToISO(endObj);
 
     onChange(startStr, endStr);
@@ -185,8 +185,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   // Duration in days
   const durationDays = useMemo(() => {
     if (!startDate || !endDate) return 1;
+    const [sy, sm, sd] = startDate.split('-').map(Number);
+    const [ey, em, ed] = endDate.split('-').map(Number);
     const diff = Math.round(
-      (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(ey, em - 1, ed).getTime() - new Date(sy, sm - 1, sd).getTime()) / (1000 * 60 * 60 * 24)
     );
     return Math.max(1, diff + 1);
   }, [startDate, endDate]);
@@ -297,12 +299,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           </button>
         </div>
 
-        {/* Day Name Headers (7 Cols: Sen - Ahd) */}
+        {/* Day Name Headers (7 Cols: Aha, Sen, Sel, Rab, Kam, Jum, Sab) */}
         <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] text-slate-500 mb-1 border-b border-slate-100 pb-1">
           {DAY_NAMES_ID.map((dayName, idx) => (
             <span
               key={dayName}
-              className={idx === 6 ? 'text-rose-600 font-extrabold' : 'text-slate-600'}
+              className={idx === 0 ? 'text-rose-600 font-extrabold' : idx === 6 ? 'text-rose-500 font-bold' : 'text-slate-600'}
             >
               {dayName.slice(0, 3)}
             </span>
