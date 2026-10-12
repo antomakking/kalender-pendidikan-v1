@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -167,47 +168,35 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
         
         {/* View Switcher Tabs (horizontally scrollable on small mobile screens) */}
-        <div className="flex overflow-x-auto max-w-full p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start no-scrollbar">
-          <button
-            onClick={() => onChangeView('year')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              currentView === 'year'
-                ? 'bg-[#143c14] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#143c14]'
-            }`}
-          >
-            Tahunan (12 Bulan)
-          </button>
-          <button
-            onClick={() => onChangeView('month')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              currentView === 'month'
-                ? 'bg-[#143c14] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#143c14]'
-            }`}
-          >
-            Bulanan
-          </button>
-          <button
-            onClick={() => onChangeView('week')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              currentView === 'week'
-                ? 'bg-[#143c14] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#143c14]'
-            }`}
-          >
-            Pekanan
-          </button>
-          <button
-            onClick={() => onChangeView('agenda')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              currentView === 'agenda'
-                ? 'bg-[#143c14] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#143c14]'
-            }`}
-          >
-            Daftar Agenda
-          </button>
+        <div className="flex overflow-x-auto max-w-full p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start no-scrollbar relative">
+          {(
+            [
+              { id: 'year' as const, label: 'Tahunan (12 Bulan)' },
+              { id: 'month' as const, label: 'Bulanan' },
+              { id: 'week' as const, label: 'Pekanan' },
+              { id: 'agenda' as const, label: 'Daftar Agenda' },
+            ] as const
+          ).map((tab) => {
+            const isActive = currentView === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onChangeView(tab.id)}
+                className={`relative px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  isActive ? 'text-white' : 'text-slate-600 hover:text-[#143c14]'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeViewTabPill"
+                    className="absolute inset-0 bg-[#143c14] rounded-lg shadow-xs"
+                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Period Navigation Controls & Selectors */}

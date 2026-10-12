@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { AgendaView } from './components/AgendaView.tsx';
 import { ControlsBar } from './components/ControlsBar.tsx';
 import { EventDetailModal } from './components/EventDetailModal.tsx';
@@ -37,6 +38,13 @@ import {
 
 const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v11';
 const TODAY_STR = formatDateToISO(new Date());
+
+const VIEW_ORDER: Record<CalendarView, number> = {
+  year: 0,
+  month: 1,
+  week: 2,
+  agenda: 3,
+};
 
 interface ToastState {
   id: number;
@@ -91,6 +99,7 @@ export default function App() {
 
   // 2. View & Navigation State (Default to TA 2026/2027 & Year View)
   const [currentView, setCurrentView] = useState<CalendarView>('year');
+  const [viewDirection, setViewDirection] = useState<number>(1);
   const [academicYear, setAcademicYear] = useState<string>('2026/2027');
   const [currentYear, setCurrentYear] = useState<number>(2026);
   const [currentMonth, setCurrentMonth] = useState<number>(6); // Juli 2026 (Awal TA 2026/2027)
@@ -341,9 +350,20 @@ export default function App() {
     }
   };
 
+  const handleViewChange = (newView: CalendarView) => {
+    if (newView === currentView) return;
+    const prevIdx = VIEW_ORDER[currentView] ?? 0;
+    const newIdx = VIEW_ORDER[newView] ?? 0;
+    setViewDirection(newIdx >= prevIdx ? 1 : -1);
+    setCurrentView(newView);
+  };
+
   const handleJumpToMonth = (year: number, month: number) => {
     setCurrentYear(year);
     setCurrentMonth(month);
+    const prevIdx = VIEW_ORDER[currentView] ?? 0;
+    const newIdx = VIEW_ORDER.month;
+    setViewDirection(newIdx >= prevIdx ? 1 : -1);
     setCurrentView('month');
   };
 
@@ -493,7 +513,7 @@ export default function App() {
         {/* Filter & View Switcher Bar */}
         <ControlsBar
           currentView={currentView}
-          onChangeView={setCurrentView}
+          onChangeView={handleViewChange}
           currentYear={currentYear}
           currentMonth={currentMonth}
           onNavigateMonth={handleNavigateMonth}
@@ -538,58 +558,91 @@ export default function App() {
                 />
               </div>
             ) : (
-              <div key={currentView} className="animate-view-fade">
-                {currentView === 'month' && (
-                  <MonthView
-                    currentYear={currentYear}
-                    currentMonth={currentMonth}
-                    events={filteredEvents}
-                    todayStr={TODAY_STR}
-                    searchQuery={searchQuery}
-                    onSelectEvent={(evt) => setSelectedEvent(evt)}
-                    onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
-                    onRescheduleEvent={handleRescheduleEvent}
-                  />
-                )}
-
-                {currentView === 'year' && (
-                  <YearView
-                    academicYear={academicYear}
-                    events={filteredEvents}
-                    todayStr={TODAY_STR}
-                    searchQuery={searchQuery}
-                    onSelectEvent={(evt) => setSelectedEvent(evt)}
-                    onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
-                    onJumpToMonth={handleJumpToMonth}
-                  />
-                )}
-
-                {currentView === 'week' && (
-                  <WeekView
-                    centerDateStr={`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-28`}
-                    events={filteredEvents}
-                    todayStr={TODAY_STR}
-                    searchQuery={searchQuery}
-                    onSelectEvent={(evt) => setSelectedEvent(evt)}
-                    onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
-                    onRescheduleEvent={handleRescheduleEvent}
-                  />
-                )}
-
-                {currentView === 'agenda' && (
-                  <AgendaView
-                    events={filteredEvents}
-                    todayStr={TODAY_STR}
-                    searchQuery={searchQuery}
-                    onResetFilters={() => {
-                      setSearchQuery('');
-                      setCategoryFilter('all');
-                      setSemester('all');
+              <div className="relative overflow-hidden w-full">
+                <AnimatePresence mode="wait" custom={viewDirection} initial={false}>
+                  <motion.div
+                    key={currentView}
+                    custom={viewDirection}
+                    variants={{
+                      enter: (direction: number) => ({
+                        x: direction > 0 ? 32 : -32,
+                        opacity: 0,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 1,
+                        transition: {
+                          x: { type: 'spring', stiffness: 360, damping: 32 },
+                          opacity: { duration: 0.2, ease: 'easeOut' },
+                        },
+                      },
+                      exit: (direction: number) => ({
+                        x: direction > 0 ? -32 : 32,
+                        opacity: 0,
+                        transition: {
+                          x: { type: 'spring', stiffness: 360, damping: 32 },
+                          opacity: { duration: 0.16, ease: 'easeIn' },
+                        },
+                      }),
                     }}
-                    onAddEvent={() => handleOpenAddEvent()}
-                    onSelectEvent={(evt) => setSelectedEvent(evt)}
-                  />
-                )}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="w-full"
+                  >
+                    {currentView === 'month' && (
+                      <MonthView
+                        currentYear={currentYear}
+                        currentMonth={currentMonth}
+                        events={filteredEvents}
+                        todayStr={TODAY_STR}
+                        searchQuery={searchQuery}
+                        onSelectEvent={(evt) => setSelectedEvent(evt)}
+                        onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
+                        onRescheduleEvent={handleRescheduleEvent}
+                      />
+                    )}
+
+                    {currentView === 'year' && (
+                      <YearView
+                        academicYear={academicYear}
+                        events={filteredEvents}
+                        todayStr={TODAY_STR}
+                        searchQuery={searchQuery}
+                        onSelectEvent={(evt) => setSelectedEvent(evt)}
+                        onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
+                        onJumpToMonth={handleJumpToMonth}
+                      />
+                    )}
+
+                    {currentView === 'week' && (
+                      <WeekView
+                        centerDateStr={`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-28`}
+                        events={filteredEvents}
+                        todayStr={TODAY_STR}
+                        searchQuery={searchQuery}
+                        onSelectEvent={(evt) => setSelectedEvent(evt)}
+                        onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
+                        onRescheduleEvent={handleRescheduleEvent}
+                      />
+                    )}
+
+                    {currentView === 'agenda' && (
+                      <AgendaView
+                        events={filteredEvents}
+                        todayStr={TODAY_STR}
+                        searchQuery={searchQuery}
+                        onResetFilters={() => {
+                          setSearchQuery('');
+                          setCategoryFilter('all');
+                          setSemester('all');
+                        }}
+                        onAddEvent={() => handleOpenAddEvent()}
+                        onSelectEvent={(evt) => setSelectedEvent(evt)}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             )}
           </section>
