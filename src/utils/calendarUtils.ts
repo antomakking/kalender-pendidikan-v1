@@ -635,3 +635,140 @@ export function generateICalFile(events: AcademicEvent[], customFilename?: strin
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export interface GenerateRecurringDatesParams {
+  startDateStr: string;
+  endDateStr: string;
+  frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  selectedDaysOfWeek?: number[]; // [1, 2, 3, 4, 5] (0=Ahad, 1=Senin, ..., 6=Sabtu)
+  endType: 'occurrences' | 'until_date' | 'semester_end';
+  occurrencesCount: number;
+  untilDateStr?: string;
+  academicYear?: string;
+}
+
+export function generateRecurringEventDates(params: GenerateRecurringDatesParams): Array<{ startDate: string; endDate: string }> {
+  const {
+    startDateStr,
+    endDateStr,
+    frequency,
+    selectedDaysOfWeek = [],
+    endType,
+    occurrencesCount,
+    untilDateStr,
+    academicYear = '2026/2027',
+  } = params;
+
+  const [sY, sM, sD] = startDateStr.split('-').map(Number);
+  const [eY, eM, eD] = endDateStr.split('-').map(Number);
+  const startDate = new Date(sY, sM - 1, sD);
+  const endDate = new Date(eY, eM - 1, eD);
+  const durationMs = Math.max(0, endDate.getTime() - startDate.getTime());
+  const durationDays = Math.round(durationMs / (1000 * 60 * 60 * 24));
+
+  // Determine limit date
+  let maxDate = new Date(startDate);
+  if (endType === 'until_date' && untilDateStr) {
+    const [uY, uM, uD] = untilDateStr.split('-').map(Number);
+    maxDate = new Date(uY, uM - 1, uD);
+  } else if (endType === 'semester_end') {
+    const startYear = parseInt(academicYear.split('/')[0], 10) || 2026;
+    const endYear = parseInt(academicYear.split('/')[1], 10) || startYear + 1;
+    if (startDateStr >= `${startYear}-07-01` && startDateStr <= `${startYear}-12-31`) {
+      maxDate = new Date(startYear, 11, 31);
+    } else {
+      maxDate = new Date(endYear, 5, 30);
+    }
+  } else {
+    maxDate.setFullYear(maxDate.getFullYear() + 2);
+  }
+
+  const results: Array<{ startDate: string; endDate: string }> = [];
+  const maxLimit = endType === 'occurrences' ? Math.max(1, occurrencesCount) : 52; // max cap
+
+  if (frequency === 'daily') {
+    const cur = new Date(startDate);
+    while (results.length < maxLimit && cur <= maxDate) {
+      const dayOfWeek = cur.getDay();
+      const isAllowed = selectedDaysOfWeek.length === 0 || selectedDaysOfWeek.includes(dayOfWeek);
+      if (isAllowed) {
+        const curStart = formatDateToISO(cur);
+        const curEndObj = new Date(cur);
+        curEndObj.setDate(curEndObj.getDate() + durationDays);
+        results.push({
+          startDate: curStart,
+          endDate: formatDateToISO(curEndObj),
+        });
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+  } else if (frequency === 'weekly') {
+    if (selectedDaysOfWeek.length > 0) {
+      const cur = new Date(startDate);
+      while (results.length < maxLimit && cur <= maxDate) {
+        const dayOfWeek = cur.getDay();
+        if (selectedDaysOfWeek.includes(dayOfWeek) && cur >= startDate) {
+          const curStart = formatDateToISO(cur);
+          const curEndObj = new Date(cur);
+          curEndObj.setDate(curEndObj.getDate() + durationDays);
+          results.push({
+            startDate: curStart,
+            endDate: formatDateToISO(curEndObj),
+          });
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+    } else {
+      for (let i = 0; i < maxLimit; i++) {
+        const cur = new Date(startDate);
+        cur.setDate(cur.getDate() + i * 7);
+        if (cur > maxDate) break;
+        const curStart = formatDateToISO(cur);
+        const curEndObj = new Date(cur);
+        curEndObj.setDate(curEndObj.getDate() + durationDays);
+        results.push({
+          startDate: curStart,
+          endDate: formatDateToISO(curEndObj),
+        });
+      }
+    }
+  } else if (frequency === 'biweekly') {
+    for (let i = 0; i < maxLimit; i++) {
+      const cur = new Date(startDate);
+      cur.setDate(cur.getDate() + i * 14);
+      if (cur > maxDate) break;
+      const curStart = formatDateToISO(cur);
+      const curEndObj = new Date(cur);
+      curEndObj.setDate(curEndObj.getDate() + durationDays);
+      results.push({
+        startDate: curStart,
+        endDate: formatDateToISO(curEndObj),
+      });
+    }
+  } else if (frequency === 'monthly') {
+    const targetDayOfMonth = startDate.getDate();
+    for (let i = 0; i < maxLimit; i++) {
+      const cur = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+      const daysInThisMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, 0).getDate();
+      const actualDay = Math.min(targetDayOfMonth, daysInThisMonth);
+      cur.setDate(actualDay);
+      if (cur > maxDate) break;
+      const curStart = formatDateToISO(cur);
+      const curEndObj = new Date(cur);
+      curEndObj.setDate(curEndObj.getDate() + durationDays);
+      results.push({
+        startDate: curStart,
+        endDate: formatDateToISO(curEndObj),
+      });
+    }
+  }
+
+  if (results.length === 0) {
+    results.push({
+      startDate: startDateStr,
+      endDate: endDateStr,
+    });
+  }
+
+  return results;
+}

@@ -20,6 +20,7 @@ import {
 } from '../utils/calendarUtils.ts';
 import { EmptyState } from './EmptyState.tsx';
 import { HighlightText } from './HighlightText.tsx';
+import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 export interface EventDisplayStyle {
   bgSolid: string;
@@ -346,8 +347,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
 
                   {/* Holiday Badge or Quick Add Button */}
                   {hasHoliday ? (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-white bg-red-600 border border-red-700 px-1.5 py-0.5 rounded-full shadow-2xs">
-                      <Flag className="w-2.5 h-2.5 fill-white text-white shrink-0 drop-shadow-xs" />
+                    <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white bg-red-600 border border-red-700 px-1.5 py-0.5 rounded-full shadow-2xs">
+                      <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
                       <span className="truncate max-w-[70px]">Libur Nas</span>
                     </span>
                   ) : (
@@ -436,7 +437,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                       >
                         <GripVertical className="w-2.5 h-2.5 opacity-60 group-hover/pill:opacity-100 shrink-0 -ml-0.5" />
                         {isHolidayEvent && (
-                          <Flag className="w-2.5 h-2.5 shrink-0 fill-white text-white drop-shadow-xs" />
+                          <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
                         )}
                         <HighlightText
                           text={event.title}
@@ -567,8 +568,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
                           {dayName}
                         </span>
                         {hasHoliday && (
-                          <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-white bg-red-600 border border-red-700 px-1.5 py-0.2 rounded-full shadow-2xs">
-                            <Flag className="w-2.5 h-2.5 fill-white text-white" />
+                          <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white bg-red-600 border border-red-700 px-1.5 py-0.2 rounded-full shadow-2xs">
+                            <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
                             Libur Nasional
                           </span>
                         )}
@@ -636,7 +637,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                                 isHolidayEvt ? 'bg-rose-600 text-white border-rose-700' : style.badgeBg
                               }`}
                             >
-                              {isHolidayEvt && <Flag className="w-2.5 h-2.5 fill-current" />}
+                              {isHolidayEvt ? <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" /> : null}
                               {cat.label}
                             </span>
                             <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">

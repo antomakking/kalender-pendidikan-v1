@@ -65,8 +65,8 @@ export const Header: React.FC<HeaderProps> = ({
         
         {/* Zone 1: Institutional Wordmark & Branding (Flexible min-w-0) */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#ffcc00] text-[#143c14] flex items-center justify-center shadow-xs font-black shrink-0">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[#143c14]" />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden shadow-xs shrink-0 flex items-center justify-center bg-white/15 p-0.5 border border-white/25">
+            <img src="/icon.svg" alt="Logo SMK IT Ibnul Qayyim" className="w-full h-full object-contain" />
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="flex items-center gap-1.5 min-w-0">

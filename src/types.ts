@@ -3,6 +3,8 @@ export type EventCategory = 'academic' | 'holiday' | 'student' | 'teacher';
 export type ClassLevel = 'X' | 'XI' | 'XII';
 export type ClassFilter = 'all' | 'X' | 'XI' | 'XII';
 
+export type RecurrenceFrequency = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+
 export interface AcademicEvent {
   id: string;
   title: string;
@@ -20,6 +22,11 @@ export interface AcademicEvent {
   isOfficialHoliday?: boolean;
   excludedDates?: string[]; // Specific dates YYYY-MM-DD where event is inactive
   excludeWeekends?: boolean; // If true, event skips Saturday and Sunday
+  isRecurring?: boolean; // True if this event is part of a recurring series
+  recurrencePattern?: RecurrenceFrequency; // 'weekly' | 'biweekly' | 'monthly' | 'daily'
+  recurrenceId?: string; // Unique shared ID grouping recurring series events
+  sessionIndex?: number; // Sesi ke-N (1, 2, 3...)
+  totalSessions?: number; // Total sesi yang dibuat dalam seri
 }
 
 export type CalendarView = 'month' | 'year' | 'week' | 'agenda';

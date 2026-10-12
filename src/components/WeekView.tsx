@@ -8,6 +8,7 @@ import {
   getWeekDays,
 } from '../utils/calendarUtils.ts';
 import { HighlightText } from './HighlightText.tsx';
+import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 interface WeekViewProps {
   centerDateStr: string;
@@ -139,8 +140,8 @@ export const WeekView: React.FC<WeekViewProps> = ({
                   </div>
 
                   {hasHoliday && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white ml-2 flex items-center gap-1 shadow-2xs">
-                      <Flag className="w-2.5 h-2.5 fill-white text-white" />
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white ml-2 flex items-center gap-1.5 shadow-2xs">
+                      <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
                       Libur Nasional
                     </span>
                   )}
@@ -229,7 +230,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                                 isHolidayEvt ? 'bg-red-600' : cat.bgSolid
                               }`}
                             >
-                              {isHolidayEvt && <Flag className="w-2.5 h-2.5 fill-white text-white" />}
+                              {isHolidayEvt && <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />}
                               <span>{isHolidayEvt ? 'Libur Nasional' : cat.label}</span>
                             </span>
                           </div>

@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { AcademicEvent } from '../types.ts';
+import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 import {
   CATEGORIES_CONFIG,
   formatDateRange,
@@ -87,8 +88,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         {(event.category === 'holiday' || event.isOfficialHoliday) && (
           <div className="mb-3.5 p-3 rounded-xl border-2 border-rose-500 bg-rose-50/90 flex items-center justify-between gap-2 shadow-xs">
             <div className="flex items-center gap-2 text-rose-900 font-black text-xs uppercase tracking-wider">
-              <div className="w-6 h-6 rounded-md bg-rose-600 text-white flex items-center justify-center">
-                <Flag className="w-3.5 h-3.5 fill-current" />
+              <div className="w-7 h-6 rounded-md bg-white border border-rose-300 flex items-center justify-center p-0.5 shadow-2xs">
+                <IndonesianFlagPin className="w-5 h-3.5" />
               </div>
               <span>Hari Libur Nasional Resmi</span>
             </div>

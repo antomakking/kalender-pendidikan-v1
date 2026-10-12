@@ -8,6 +8,7 @@ import {
   MONTH_NAMES_ID,
 } from '../utils/calendarUtils.ts';
 import { HighlightText } from './HighlightText.tsx';
+import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 interface YearViewProps {
   academicYear: string;
@@ -255,8 +256,10 @@ export const YearView: React.FC<YearViewProps> = ({
                         }`}
                       >
                         <span className="leading-tight">{day}</span>
-                        {hasHoliday && !isToday && (
-                          <span className="w-1.5 h-1.5 bg-white rounded-full mt-0.5 shadow-2xs" />
+                        {hasHoliday && (
+                          <div className="mt-0.5 flex items-center justify-center" title="Libur Nasional (Merah Putih)">
+                            <IndonesianFlagPin className="w-3.5 h-2.5 drop-shadow-xs" />
+                          </div>
                         )}
                       </div>
                     );
@@ -275,8 +278,8 @@ export const YearView: React.FC<YearViewProps> = ({
                       .filter((e) => e.category === 'holiday' || e.isOfficialHoliday)
                       .slice(0, 3)
                       .map((h) => (
-                        <div key={h.id} className="truncate flex items-center gap-1" title={h.title}>
-                          <Flag className="w-2.5 h-2.5 fill-red-600 text-red-600 shrink-0" />
+                        <div key={h.id} className="truncate flex items-center gap-1.5" title={h.title}>
+                          <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
                           <span className="truncate">{parseInt(h.startDate.slice(8), 10)} {MONTH_NAMES_ID[month]}: {h.title}</span>
                         </div>
                       ))}

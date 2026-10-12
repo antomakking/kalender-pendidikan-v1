@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
-import { Calendar, Clock, Flag, ShieldCheck, Users, X } from 'lucide-react';
-import { AcademicEvent, ClassLevel, EventCategory } from '../types.ts';
+import React, { useMemo, useState } from 'react';
+import { Calendar, Clock, Flag, Repeat, ShieldCheck, Sparkles, Users, X } from 'lucide-react';
+import { AcademicEvent, ClassLevel, EventCategory, RecurrenceFrequency } from '../types.ts';
 import { DateRangePicker } from './DateRangePicker.tsx';
-import { getEventClasses } from '../utils/calendarUtils.ts';
+import {
+  DAY_NAMES_ID,
+  formatIndonesianDate,
+  generateRecurringEventDates,
+  getEventClasses,
+} from '../utils/calendarUtils.ts';
 
 interface EventFormModalProps {
   initialEvent?: AcademicEvent | null;
@@ -10,7 +15,7 @@ interface EventFormModalProps {
   defaultCategory?: EventCategory;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (event: AcademicEvent) => void;
+  onSave: (event: AcademicEvent | AcademicEvent[]) => void;
 }
 
 export const EventFormModal: React.FC<EventFormModalProps> = ({
@@ -47,10 +52,51 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [description, setDescription] = useState(initialEvent?.description || '');
   const [academicYear, setAcademicYear] = useState(initialEvent?.academicYear || '2026/2027');
 
+  // Recurring Event Configuration State
+  const [isRecurring, setIsRecurring] = useState<boolean>(initialEvent?.isRecurring || false);
+  const [recurrencePattern, setRecurrencePattern] = useState<RecurrenceFrequency>(
+    initialEvent?.recurrencePattern || 'weekly'
+  );
+  const [selectedDaysOfWeek, setSelectedDaysOfWeek] = useState<number[]>(() => {
+    const [y, m, d] = (initialEvent?.startDate || defaultDate).split('-').map(Number);
+    const dayOfWeek = new Date(y, m - 1, d).getDay();
+    return [dayOfWeek];
+  });
+  const [recurrenceEndType, setRecurrenceEndType] = useState<'occurrences' | 'semester_end' | 'until_date'>('occurrences');
+  const [occurrencesCount, setOccurrencesCount] = useState<number>(8); // Default 8 kali
+  const [untilDate, setUntilDate] = useState<string>(() => {
+    const [y] = (initialEvent?.startDate || defaultDate).split('-').map(Number);
+    return `${y}-12-31`;
+  });
+
+  // Calculate live preview of recurring event dates
+  const previewRecurringDates = useMemo(() => {
+    if (!isRecurring) return [];
+    return generateRecurringEventDates({
+      startDateStr: startDate,
+      endDateStr: endDate,
+      frequency: recurrencePattern === 'none' ? 'weekly' : recurrencePattern,
+      selectedDaysOfWeek: recurrencePattern === 'weekly' ? selectedDaysOfWeek : [],
+      endType: recurrenceEndType,
+      occurrencesCount,
+      untilDateStr: untilDate,
+      academicYear,
+    });
+  }, [
+    isRecurring,
+    startDate,
+    endDate,
+    recurrencePattern,
+    selectedDaysOfWeek,
+    recurrenceEndType,
+    occurrencesCount,
+    untilDate,
+    academicYear,
+  ]);
+
   const handleToggleClass = (cls: ClassLevel) => {
     setTargetClasses((prev) => {
       if (prev.includes(cls)) {
-        // don't allow empty if possible, but if only 1 left keep it
         const next = prev.filter((c) => c !== cls);
         return next.length > 0 ? next : [cls];
       } else {
@@ -63,26 +109,59 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     e.preventDefault();
     if (!title.trim() || !startDate || !endDate) return;
 
-    const semester = startDate >= '2027-01-01' ? 'genap' : 'ganjil';
+    if (isRecurring && previewRecurringDates.length > 0) {
+      const recId = initialEvent?.recurrenceId || `rec-${Date.now()}`;
+      const totalSessions = previewRecurringDates.length;
 
-    const newOrUpdatedEvent: AcademicEvent = {
-      id: initialEvent?.id || `evt-custom-${Date.now()}`,
-      title: title.trim(),
-      startDate,
-      endDate: endDate < startDate ? startDate : endDate,
-      startTime: startTime || '08:00',
-      endTime: endTime || '15:00',
-      category: isOfficialHoliday ? 'holiday' : category,
-      targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
-      audience: audience.trim() || 'Semua Siswa',
-      location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
-      description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
-      academicYear,
-      semester,
-      isOfficialHoliday,
-    };
+      const generatedEvents: AcademicEvent[] = previewRecurringDates.map((dates, index) => {
+        const semester = dates.startDate >= '2027-01-01' ? 'genap' : 'ganjil';
+        return {
+          id: (index === 0 && initialEvent) ? initialEvent.id : `evt-custom-${Date.now()}-${index + 1}`,
+          title: title.trim(),
+          startDate: dates.startDate,
+          endDate: dates.endDate < dates.startDate ? dates.startDate : dates.endDate,
+          startTime: startTime || '08:00',
+          endTime: endTime || '15:00',
+          category: isOfficialHoliday ? 'holiday' : category,
+          targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
+          audience: audience.trim() || 'Semua Siswa',
+          location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
+          description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
+          academicYear,
+          semester,
+          isOfficialHoliday,
+          isRecurring: true,
+          recurrencePattern,
+          recurrenceId: recId,
+          sessionIndex: index + 1,
+          totalSessions,
+        };
+      });
 
-    onSave(newOrUpdatedEvent);
+      onSave(generatedEvents);
+    } else {
+      const semester = startDate >= '2027-01-01' ? 'genap' : 'ganjil';
+      const singleEvent: AcademicEvent = {
+        id: initialEvent?.id || `evt-custom-${Date.now()}`,
+        title: title.trim(),
+        startDate,
+        endDate: endDate < startDate ? startDate : endDate,
+        startTime: startTime || '08:00',
+        endTime: endTime || '15:00',
+        category: isOfficialHoliday ? 'holiday' : category,
+        targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
+        audience: audience.trim() || 'Semua Siswa',
+        location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
+        description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
+        academicYear,
+        semester,
+        isOfficialHoliday,
+        isRecurring: false,
+      };
+
+      onSave(singleEvent);
+    }
+
     onClose();
   };
 
@@ -233,6 +312,263 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#143c14]"
               />
             </div>
+          </div>
+
+          {/* Fitur Agenda Berulang (Recurring / Routine Events) */}
+          <div
+            className={`p-3.5 rounded-xl border-2 transition-all space-y-3 ${
+              isRecurring
+                ? 'border-emerald-600 bg-emerald-50/80 text-slate-900 shadow-xs ring-2 ring-emerald-500/20'
+                : 'border-slate-200 bg-slate-50/60 text-slate-700 hover:border-emerald-300'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                    isRecurring
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  <Repeat className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold flex items-center gap-1.5">
+                    <span className={isRecurring ? 'text-emerald-950 font-black' : 'text-slate-800'}>
+                      Jadikan Agenda Berulang (Rutin)
+                    </span>
+                    {isRecurring && (
+                      <span className="text-[10px] bg-emerald-700 text-white px-1.5 py-0.2 rounded-full font-bold">
+                        Aktif
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-tight">
+                    Otomatis menjadwalkan agenda secara berkala (mingguan, dua mingguan, bulanan, atau harian).
+                  </p>
+                </div>
+              </div>
+
+              {/* Toggle Switch */}
+              <button
+                type="button"
+                onClick={() => setIsRecurring(!isRecurring)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  isRecurring ? 'bg-emerald-700' : 'bg-slate-300'
+                }`}
+                role="switch"
+                aria-checked={isRecurring}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                    isRecurring ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Sub-form opsi pengulangan */}
+            {isRecurring && (
+              <div className="pt-2.5 border-t border-emerald-200/80 space-y-3 animate-in fade-in duration-150">
+                {/* 1. Frekuensi Pengulangan */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Frekuensi Pengulangan
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {(
+                      [
+                        { id: 'weekly', label: 'Mingguan', desc: 'Tiap Pekan' },
+                        { id: 'biweekly', label: '2 Pekan Sekali', desc: 'Dwi-mingguan' },
+                        { id: 'monthly', label: 'Bulanan', desc: 'Tiap Bulan' },
+                        { id: 'daily', label: 'Hari Kerja', desc: 'Senin–Jumat' },
+                      ] as const
+                    ).map((freq) => (
+                      <button
+                        key={freq.id}
+                        type="button"
+                        onClick={() => {
+                          setRecurrencePattern(freq.id);
+                          if (freq.id === 'daily') {
+                            setSelectedDaysOfWeek([1, 2, 3, 4, 5]); // Sen - Jum
+                          }
+                        }}
+                        className={`p-2 rounded-lg text-left border transition-all cursor-pointer ${
+                          recurrencePattern === freq.id
+                            ? 'bg-emerald-800 text-white border-emerald-900 shadow-xs font-bold'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span className="block text-xs leading-tight">{freq.label}</span>
+                        <span
+                          className={`text-[10px] block font-normal leading-tight mt-0.5 ${
+                            recurrencePattern === freq.id ? 'text-emerald-200' : 'text-slate-400'
+                          }`}
+                        >
+                          {freq.desc}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Hari dalam Sepekan (khusus Mingguan) */}
+                {recurrencePattern === 'weekly' && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Ulangi Pada Hari (Bisa pilih lebih dari satu)
+                    </label>
+                    <div className="flex flex-wrap gap-1">
+                      {DAY_NAMES_ID.map((dName, dayIdx) => {
+                        const isSelected = selectedDaysOfWeek.includes(dayIdx);
+                        return (
+                          <button
+                            key={dName}
+                            type="button"
+                            onClick={() => {
+                              setSelectedDaysOfWeek((prev) => {
+                                if (prev.includes(dayIdx)) {
+                                  return prev.length > 1 ? prev.filter((d) => d !== dayIdx) : prev;
+                                }
+                                return [...prev, dayIdx].sort((a, b) => a - b);
+                              });
+                            }}
+                            className={`px-2.5 py-1 text-xs rounded-lg font-bold border transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-emerald-700 text-white border-emerald-800 shadow-2xs'
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {isSelected ? '✓ ' : ''}{dName}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Batas Pengulangan */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Berakhir Pada
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {/* Opsi 1: Jumlah Pertemuan */}
+                    <div
+                      onClick={() => setRecurrenceEndType('occurrences')}
+                      className={`p-2.5 rounded-lg border cursor-pointer transition-all ${
+                        recurrenceEndType === 'occurrences'
+                          ? 'bg-white border-emerald-600 ring-2 ring-emerald-500/30'
+                          : 'bg-white/70 border-slate-200 opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <input
+                          type="radio"
+                          name="recurrenceEndType"
+                          checked={recurrenceEndType === 'occurrences'}
+                          onChange={() => setRecurrenceEndType('occurrences')}
+                          className="accent-emerald-700"
+                        />
+                        <span className="text-xs font-bold text-slate-800">Jumlah Pertemuan</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <input
+                          type="number"
+                          min={2}
+                          max={36}
+                          value={occurrencesCount}
+                          disabled={recurrenceEndType !== 'occurrences'}
+                          onChange={(e) => setOccurrencesCount(Math.max(2, Math.min(36, parseInt(e.target.value, 10) || 2)))}
+                          className="w-16 px-2 py-1 border border-slate-200 rounded text-xs text-center font-bold text-slate-900 bg-white"
+                        />
+                        <span className="text-[11px] text-slate-600">kali sesi</span>
+                      </div>
+                    </div>
+
+                    {/* Opsi 2: Sampai Akhir Semester */}
+                    <div
+                      onClick={() => setRecurrenceEndType('semester_end')}
+                      className={`p-2.5 rounded-lg border cursor-pointer transition-all ${
+                        recurrenceEndType === 'semester_end'
+                          ? 'bg-white border-emerald-600 ring-2 ring-emerald-500/30'
+                          : 'bg-white/70 border-slate-200 opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <input
+                          type="radio"
+                          name="recurrenceEndType"
+                          checked={recurrenceEndType === 'semester_end'}
+                          onChange={() => setRecurrenceEndType('semester_end')}
+                          className="accent-emerald-700"
+                        />
+                        <span className="text-xs font-bold text-slate-800">Akhir Semester</span>
+                      </div>
+                      <p className="text-[10.5px] text-slate-500 mt-1">
+                        Sampai akhir semester aktif ({startDate >= '2027-01-01' ? 'Juni 2027' : 'Desember 2026'}).
+                      </p>
+                    </div>
+
+                    {/* Opsi 3: Tanggal Tertentu */}
+                    <div
+                      onClick={() => setRecurrenceEndType('until_date')}
+                      className={`p-2.5 rounded-lg border cursor-pointer transition-all ${
+                        recurrenceEndType === 'until_date'
+                          ? 'bg-white border-emerald-600 ring-2 ring-emerald-500/30'
+                          : 'bg-white/70 border-slate-200 opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <input
+                          type="radio"
+                          name="recurrenceEndType"
+                          checked={recurrenceEndType === 'until_date'}
+                          onChange={() => setRecurrenceEndType('until_date')}
+                          className="accent-emerald-700"
+                        />
+                        <span className="text-xs font-bold text-slate-800">Sampai Tanggal</span>
+                      </div>
+                      <input
+                        type="date"
+                        value={untilDate}
+                        disabled={recurrenceEndType !== 'until_date'}
+                        onChange={(e) => setUntilDate(e.target.value)}
+                        className="w-full px-2 py-1 border border-slate-200 rounded text-xs text-slate-900 bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Live Schedule Summary & Preview */}
+                <div className="p-2.5 bg-white rounded-lg border border-emerald-300/80 shadow-2xs space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-xs font-black text-emerald-950 flex items-center gap-1">
+                      <span>✓ Siap dibuat:</span>
+                      <strong className="text-emerald-700 underline">{previewRecurringDates.length} sesi agenda</strong>
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Mulai: {formatIndonesianDate(startDate)}
+                    </span>
+                  </div>
+
+                  {/* List of dates preview */}
+                  {previewRecurringDates.length > 0 && (
+                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 bg-slate-50 rounded border border-slate-200/80">
+                      {previewRecurringDates.map((item, idx) => (
+                        <span
+                          key={item.startDate}
+                          className="text-[10px] bg-white text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded font-medium shadow-2xs"
+                        >
+                          Sesi {idx + 1}: {formatIndonesianDate(item.startDate, { shortMonth: true })}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Tingkat Kelas Sasaran */}

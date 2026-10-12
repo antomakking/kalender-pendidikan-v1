@@ -11,6 +11,7 @@ import {
 } from '../utils/calendarUtils.ts';
 import { EmptyState } from './EmptyState.tsx';
 import { HighlightText } from './HighlightText.tsx';
+import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 interface AgendaViewProps {
   events: AcademicEvent[];
@@ -119,7 +120,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                             isHoliday ? 'bg-red-600' : cat.bgSolid
                           }`}
                         >
-                          {isHoliday && <Flag className="w-2.5 h-2.5 fill-white text-white" />}
+                          {isHoliday && <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />}
                           <span>{isHoliday ? 'Libur Nasional' : cat.label}</span>
                         </span>
 

@@ -1,47 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#143c14"/>
-      <stop offset="100%" stop-color="#0b240b"/>
-    </linearGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffe066"/>
-      <stop offset="100%" stop-color="#ffcc00"/>
-    </linearGradient>
+    <style>
+      .star-bg { fill: #5c7b9b; stroke: #ffffff; stroke-width: 7; stroke-linejoin: miter; stroke-miterlimit: 4; }
+      .star-inner { fill: none; stroke: #ffffff; stroke-width: 5.5; stroke-linejoin: miter; stroke-miterlimit: 4; }
+      .txt-top-smk { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; font-size: 23px; font-weight: 800; fill: #ffffff; text-anchor: middle; letter-spacing: 0.5px; }
+      .txt-top-ibnul { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; font-size: 30px; font-weight: 900; fill: #ffffff; text-anchor: middle; letter-spacing: 1px; }
+      .txt-arabic { font-family: 'KacstPoster', 'KacstTitle', 'Amiri', 'Traditional Arabic', 'Noto Naskh Arabic', 'Segoe UI', Arial, sans-serif; font-size: 40px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    </style>
   </defs>
-  
-  <!-- Outer Rounded Shield / Square -->
-  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
-  
-  <!-- Gold Border Accent -->
-  <rect x="24" y="24" width="464" height="464" rx="90" fill="none" stroke="url(#goldGrad)" stroke-width="12" opacity="0.9"/>
-  
-  <!-- Central Institutional Shield with Calendar Grid -->
-  <g transform="translate(96, 96)">
-    <!-- Calendar Card Base -->
-    <rect x="0" y="40" width="320" height="260" rx="36" fill="#ffffff" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.35))"/>
-    
-    <!-- Header Bar on Card -->
-    <path d="M 0 76 C 0 56 16 40 36 40 L 284 40 C 304 40 320 56 320 76 L 320 110 L 0 110 Z" fill="url(#goldGrad)"/>
-    
-    <!-- Calendar Rings -->
-    <rect x="64" y="18" width="24" height="46" rx="12" fill="#143c14"/>
-    <rect x="232" y="18" width="24" height="46" rx="12" fill="#143c14"/>
-    
-    <!-- Calendar Grid Dots / Items -->
-    <circle cx="76" cy="160" r="16" fill="#143c14"/>
-    <circle cx="160" cy="160" r="16" fill="#15803d"/>
-    <circle cx="244" cy="160" r="16" fill="#dc2626"/>
-    
-    <circle cx="76" cy="220" r="16" fill="#0284c7"/>
-    <circle cx="160" cy="220" r="16" fill="#eab308"/>
-    <circle cx="244" cy="220" r="16" fill="#143c14"/>
-    
-    <!-- Badge / Graduation Hat Accent -->
-    <path d="M 160 62 L 210 82 L 160 102 L 110 82 Z" fill="#143c14"/>
+
+  <!-- 8-Pointed Islamic Star (Rub el Hizb) Base & Outer White Border -->
+  <polygon points="256.0,14.0 321.82,97.09 427.12,84.88 414.91,190.18 498.0,256.0 414.91,321.82 427.12,427.12 321.82,414.91 256.0,498.0 190.18,414.91 84.88,427.12 97.09,321.82 14.0,256.0 97.09,190.18 84.88,84.88 190.18,97.09" class="star-bg"/>
+
+  <!-- Concentric Inner White Border -->
+  <polygon points="256.0,34.0 316.46,110.03 412.98,99.02 401.97,195.54 478.0,256.0 401.97,316.46 412.98,412.98 316.46,401.97 256.0,478.0 195.54,401.97 99.02,412.98 110.03,316.46 34.0,256.0 110.03,195.54 99.02,99.02 195.54,110.03" class="star-inner"/>
+
+  <!-- Top Institutional Wordmark -->
+  <text x="256" y="136" class="txt-top-smk">SMK ISLAM TERPADU</text>
+  <text x="256" y="168" class="txt-top-ibnul">IBNUL QAYYIM</text>
+
+  <!-- Center Open Book Icon -->
+  <g fill="#ffffff" transform="translate(256, 266)">
+    <!-- Left Main Page -->
+    <path d="M -7.5,-44 C -28,-47 -58,-37 -70,-34 C -74,-33 -77,-30 -77,-26 L -77,16 C -77,20 -74,23 -70,22 C -58,19 -28,10 -7.5,15 Z"/>
+    <!-- Left Bottom Cover Accent -->
+    <path d="M -7.5,23 C -28,18 -58,26 -70,29 C -74,30 -77,28 -77,24 L -77,28 C -77,32 -74,35 -70,34 C -58,31 -28,23 -7.5,29 Z"/>
+
+    <!-- Right Main Page -->
+    <path d="M 7.5,-44 C 28,-47 58,-37 70,-34 C 74,-33 77,-30 77,-26 L 77,16 C 77,20 74,23 70,22 C 58,19 28,10 7.5,15 Z"/>
+    <!-- Right Bottom Cover Accent -->
+    <path d="M 7.5,23 C 28,18 58,26 70,29 C 74,30 77,28 77,24 L 77,28 C 77,32 74,35 70,34 C 58,31 28,23 7.5,29 Z"/>
   </g>
-  
-  <!-- Islamic Crescent & Star Accent at Bottom -->
-  <path d="M 236 438 C 248 438 258 430 262 420 C 250 422 238 414 238 400 C 238 388 248 380 260 380 C 248 372 232 376 226 390 C 220 404 224 424 236 438 Z" fill="#ffcc00"/>
-  <polygon points="274,394 278,404 288,404 280,410 283,420 274,414 266,420 269,410 261,404 271,404" fill="#ffcc00"/>
+
+  <!-- Bottom Arabic Text: مدرسة ابن القيم -->
+  <text x="256" y="384" class="txt-arabic">ﻣﺪﺭﺳﺔ ﺍﺑﺐ ﺍﻝﻘﻴﻢ</text>
 </svg>
