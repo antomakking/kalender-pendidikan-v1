@@ -98,9 +98,9 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-semibold ${cat.bgBadge}`}>
             {cat.label}
           </span>
-          {getEventClasses(event).map((cls) => (
+          {getEventClasses(event).map((cls, idx) => (
             <span
-              key={cls}
+              key={`${cls}-${idx}`}
               className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                 cls === 'X'
                   ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800'

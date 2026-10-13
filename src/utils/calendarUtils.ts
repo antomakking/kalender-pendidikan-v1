@@ -118,7 +118,7 @@ export const CATEGORIES_CONFIG: Record<EventCategory, CategoryMeta> = {
 
 export function getEventClasses(event: AcademicEvent): ClassLevel[] {
   if (event.targetClasses && event.targetClasses.length > 0) {
-    return event.targetClasses;
+    return Array.from(new Set(event.targetClasses));
   }
   const text = `${event.title} ${event.audience} ${event.description}`.toUpperCase();
   const classes: ClassLevel[] = [];
@@ -134,7 +134,7 @@ export function getEventClasses(event: AcademicEvent): ClassLevel[] {
   }
 
   if (classes.length > 0) {
-    const order: ClassLevel[] = ['X', 'XII', 'XII'];
+    const order: ClassLevel[] = ['X', 'XI', 'XII'];
     return order.filter((c) => classes.includes(c));
   }
 
