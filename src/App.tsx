@@ -101,14 +101,14 @@ export default function App() {
     );
   });
 
-  // Dark Mode State & Effect
+  // Dark Mode State & Effect (Default to light mode when opening for the first time)
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('smk_it_kalender_theme');
       if (saved !== null) {
         return saved === 'dark';
       }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return false;
     } catch (e) {
       return false;
     }
