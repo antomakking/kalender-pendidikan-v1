@@ -38,7 +38,7 @@ import {
   setSessionUnlocked,
 } from './utils/securityUtils.ts';
 
-const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v11';
+const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v12';
 const TODAY_STR = formatDateToISO(new Date());
 
 const VIEW_ORDER: Record<CalendarView, number> = {
@@ -69,14 +69,18 @@ export default function App() {
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v8');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v9');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v10');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v11');
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((e: AcademicEvent) => e.id));
+          const missingSeedEvents = INITIAL_EVENTS.filter((e) => !existingIds.has(e.id));
+          const combinedEvents = [...parsed, ...missingSeedEvents];
           // Filter out any P5 items & deduplicate
           return deduplicateEvents(
-            parsed.filter(
+            combinedEvents.filter(
               (e: AcademicEvent) =>
                 e &&
                 typeof e === 'object' &&
