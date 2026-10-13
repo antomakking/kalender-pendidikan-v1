@@ -13,6 +13,7 @@ import {
 import { AcademicEvent, SemesterFilter } from '../types.ts';
 import {
   CATEGORIES_CONFIG,
+  deduplicateEvents,
   formatDateRange,
   formatDateToISO,
   getRelativeTimeStatus,
@@ -46,19 +47,30 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
   // Real Data Section 1: Agenda Pembelajaran & Ujian (KBM, Asesmen, Sumatif, Ujian, dsb.)
   const learningAndExamEvents = useMemo(() => {
     return filteredContextEvents
-      .filter((e) => e.category === 'academic' || e.category === 'teacher')
+      .filter(
+        (e) =>
+          e.category === 'kbm' ||
+          e.category === 'assessment' ||
+          e.category === 'academic' ||
+          (e.title || '').toLowerCase().includes('kbm') ||
+          (e.title || '').toLowerCase().includes('ujian') ||
+          (e.title || '').toLowerCase().includes('sumatif') ||
+          (e.title || '').toLowerCase().includes('assesmen')
+      )
       .sort((a, b) => a.startDate.localeCompare(b.startDate));
   }, [filteredContextEvents]);
 
-  // Real Data Section 2: Registrasi & Administrasi / Kesiswaan (Daftar ulang, PKL, MPLS, OSIS, dsb.)
+  // Real Data Section 2: Registrasi & Administrasi / Kesiswaan & Kegiatan Sekolah
   const registrationAndAdminEvents = useMemo(() => {
     return filteredContextEvents
       .filter(
         (e) =>
           e.category === 'student' ||
-          e.title.toLowerCase().includes('registrasi') ||
-          e.title.toLowerCase().includes('daftar ulang') ||
-          e.title.toLowerCase().includes('administrasi')
+          e.category === 'school' ||
+          e.category === 'teacher' ||
+          (e.title || '').toLowerCase().includes('registrasi') ||
+          (e.title || '').toLowerCase().includes('daftar ulang') ||
+          (e.title || '').toLowerCase().includes('administrasi')
       )
       .sort((a, b) => a.startDate.localeCompare(b.startDate));
   }, [filteredContextEvents]);
@@ -70,22 +82,24 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
     const limitDate = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
     const limitStr = formatDateToISO(limitDate);
 
-    return events
-      .filter((e) => {
-        const isOngoing = e.startDate <= todayStr && e.endDate >= todayStr;
-        const isUpcomingSoon = e.startDate >= todayStr && e.startDate <= limitStr;
-        return isOngoing || isUpcomingSoon;
-      })
-      .sort((a, b) => a.startDate.localeCompare(b.startDate));
-  }, [events, todayStr]);
+    return deduplicateEvents(
+      filteredContextEvents
+        .filter((e) => {
+          const isOngoing = e.startDate <= todayStr && e.endDate >= todayStr;
+          const isUpcomingSoon = e.startDate >= todayStr && e.startDate <= limitStr;
+          return isOngoing || isUpcomingSoon;
+        })
+        .sort((a, b) => a.startDate.localeCompare(b.startDate))
+    );
+  }, [filteredContextEvents, todayStr]);
 
   return (
     <aside className="space-y-5" id="agenda-mendatang">
       {/* Official Poster-Style Academic Agenda Highlights (Real Data from Calendar) */}
-      <div className="bg-amber-50/80 border-2 border-amber-300/80 rounded-2xl p-4 shadow-xs space-y-4">
+      <div className="bg-amber-50/80 dark:bg-amber-950/30 border-2 border-amber-300/80 dark:border-amber-800/80 rounded-2xl p-4 shadow-xs space-y-4">
         {/* Section 1: Agenda Pembelajaran & Ujian (Data Real) */}
         <div className="space-y-2">
-          <div className="bg-[#143c14] text-white px-3 py-1.5 rounded-full flex items-center justify-between shadow-2xs">
+          <div className="bg-[#143c14] dark:bg-emerald-950 text-white px-3 py-1.5 rounded-full flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-[#ffcc00]" />
               <h4 className="font-black text-xs uppercase tracking-wide">
@@ -97,9 +111,9 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
             </span>
           </div>
 
-          <div className="space-y-1.5 text-xs text-slate-800 pl-1 font-medium max-h-56 overflow-y-auto pr-1">
+          <div className="space-y-1.5 text-xs text-slate-800 dark:text-slate-200 pl-1 font-medium max-h-56 overflow-y-auto pr-1">
             {learningAndExamEvents.length === 0 ? (
-              <p className="text-[11px] text-slate-500 italic py-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 italic py-1">
                 Tidak ada agenda pembelajaran/ujian pada filter ini.
               </p>
             ) : (
@@ -107,15 +121,15 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
                 <div
                   key={evt.id}
                   onClick={() => onSelectEvent(evt)}
-                  className="flex items-start gap-1.5 p-1 rounded-md hover:bg-amber-100/70 transition-colors cursor-pointer group"
+                  className="flex items-start gap-1.5 p-1 rounded-md hover:bg-amber-100/70 dark:hover:bg-amber-900/40 transition-colors cursor-pointer group"
                   title={`Klik untuk melihat rincian: ${evt.title}`}
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#143c14] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#143c14] dark:text-emerald-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                   <span className="leading-snug">
-                    <strong className="text-slate-900 group-hover:text-[#143c14] transition-colors">
+                    <strong className="text-slate-900 dark:text-slate-100 group-hover:text-[#143c14] dark:group-hover:text-emerald-300 transition-colors">
                       {evt.title}:
                     </strong>{' '}
-                    <span className="text-slate-700 font-normal">
+                    <span className="text-slate-700 dark:text-slate-300 font-normal">
                       {formatDateRange(evt.startDate, evt.endDate)}
                     </span>
                   </span>
@@ -126,8 +140,8 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
         </div>
 
         {/* Section 2: Jadwal Kesiswaan, OSIS & PKL (Data Real) */}
-        <div className="space-y-2 pt-2 border-t border-amber-200">
-          <div className="bg-[#143c14] text-white px-3 py-1.5 rounded-full flex items-center justify-between shadow-2xs">
+        <div className="space-y-2 pt-2 border-t border-amber-200 dark:border-amber-800/60">
+          <div className="bg-[#143c14] dark:bg-emerald-950 text-white px-3 py-1.5 rounded-full flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2">
               <Users className="w-3.5 h-3.5 text-[#ffcc00]" />
               <h4 className="font-black text-xs uppercase tracking-wide">
@@ -139,9 +153,9 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
             </span>
           </div>
 
-          <div className="space-y-1.5 text-xs text-slate-800 pl-1 font-medium max-h-52 overflow-y-auto pr-1">
+          <div className="space-y-1.5 text-xs text-slate-800 dark:text-slate-200 pl-1 font-medium max-h-52 overflow-y-auto pr-1">
             {registrationAndAdminEvents.length === 0 ? (
-              <p className="text-[11px] text-slate-500 italic py-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 italic py-1">
                 Tidak ada agenda kesiswaan/PKL pada filter ini.
               </p>
             ) : (
@@ -149,15 +163,15 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
                 <div
                   key={evt.id}
                   onClick={() => onSelectEvent(evt)}
-                  className="flex items-start gap-1.5 p-1 rounded-md hover:bg-amber-100/70 transition-colors cursor-pointer group"
+                  className="flex items-start gap-1.5 p-1 rounded-md hover:bg-amber-100/70 dark:hover:bg-amber-900/40 transition-colors cursor-pointer group"
                   title={`Klik untuk melihat rincian: ${evt.title}`}
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#143c14] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#143c14] dark:text-emerald-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                   <span className="leading-snug">
-                    <strong className="text-slate-900 group-hover:text-[#143c14] transition-colors">
+                    <strong className="text-slate-900 dark:text-slate-100 group-hover:text-[#143c14] dark:group-hover:text-emerald-300 transition-colors">
                       {evt.title}:
                     </strong>{' '}
-                    <span className="text-slate-700 font-normal">
+                    <span className="text-slate-700 dark:text-slate-300 font-normal">
                       {formatDateRange(evt.startDate, evt.endDate)}
                     </span>
                   </span>
@@ -169,15 +183,15 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
       </div>
 
       {/* Upcoming Dynamic Events Box */}
-      <div className="bg-white border-2 border-[#143c14]/20 rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div className="bg-white dark:bg-slate-900 border-2 border-[#143c14]/20 dark:border-emerald-800/50 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-[#143c14] text-white flex items-center justify-center font-bold">
+            <div className="w-6 h-6 rounded-md bg-[#143c14] dark:bg-emerald-900 text-white flex items-center justify-center font-bold">
               <Bell className="w-3.5 h-3.5 text-[#ffcc00]" />
             </div>
-            <h3 className="font-black text-slate-900 text-sm">Agenda Mendatang</h3>
+            <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm">Agenda Mendatang</h3>
           </div>
-          <span className="text-xs text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
             {upcomingList.length} Kegiatan
           </span>
         </div>
@@ -201,7 +215,7 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
                 <div
                   key={evt.id}
                   onClick={() => onSelectEvent(evt)}
-                  className="p-3 rounded-xl border border-slate-200 hover:border-[#143c14] transition-all bg-slate-50/70 hover:bg-white cursor-pointer group space-y-1.5 shadow-2xs"
+                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-[#143c14] dark:hover:border-emerald-500 transition-all bg-slate-50/70 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 cursor-pointer group space-y-1.5 shadow-2xs"
                 >
                   <div className="flex items-center justify-between gap-1 text-[11px]">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${rel.badgeClass}`}>
@@ -212,11 +226,11 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
                     </span>
                   </div>
 
-                  <h4 className="font-bold text-slate-900 text-xs leading-snug line-clamp-2 group-hover:text-[#143c14] transition-colors">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs leading-snug line-clamp-2 group-hover:text-[#143c14] dark:group-hover:text-emerald-300 transition-colors">
                     {evt.title}
                   </h4>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1">
                     <span>{formatDateRange(evt.startDate, evt.endDate)}</span>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                   </div>
@@ -228,7 +242,7 @@ export const UpcomingSidebar: React.FC<UpcomingSidebarProps> = ({
       </div>
 
       {/* Institution Info Card */}
-      <div className="bg-[#143c14] text-white rounded-2xl p-4 border-b-4 border-[#ffcc00] shadow-xs space-y-2 text-xs">
+      <div className="bg-[#143c14] dark:bg-emerald-950 text-white rounded-2xl p-4 border-b-4 border-[#ffcc00] dark:border-emerald-500 shadow-xs space-y-2 text-xs">
         <div className="flex items-center gap-2 font-black text-white text-sm">
           <Info className="w-4 h-4 text-[#ffcc00] shrink-0" />
           <span>SMK IT Ibnul Qayyim Makassar</span>

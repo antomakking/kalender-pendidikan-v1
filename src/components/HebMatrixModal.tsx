@@ -156,24 +156,24 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-6xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 relative my-auto flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-6xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative my-auto flex flex-col max-h-[92vh] overflow-hidden">
         
         {/* Header Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200 shrink-0">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#143c14] text-[#ffcc00] flex items-center justify-center font-bold shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#143c14] dark:bg-emerald-950 text-[#ffcc00] flex items-center justify-center font-bold shadow-xs">
               <BookOpen className="w-5 h-5 text-[#ffcc00]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">
                   Matriks Distribusi Jam Pelajaran (JP) & HEB
                 </h3>
                 <span className="bg-[#ffcc00] text-[#143c14] text-[10px] font-bold px-2 py-0.5 rounded uppercase">
                   TA. {academicYear}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Alokasi waktu tatap muka, pekan efektif KBM, dan agenda khusus per tingkat kelas.
               </p>
             </div>
@@ -181,7 +181,7 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
             title="Tutup"
           >
             <X className="w-5 h-5" />
@@ -189,18 +189,18 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
         </div>
 
         {/* Class Selection Tabs & Quick Summary Stats */}
-        <div className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 bg-slate-50 px-4 rounded-xl my-3 border border-slate-200">
+        <div className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 bg-slate-50 dark:bg-slate-800/80 px-4 rounded-xl my-3 border border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
-              <GraduationCap className="w-4 h-4 text-emerald-800" />
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+              <GraduationCap className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
               Pilih Kelas:
             </span>
             <button
               onClick={() => setSelectedClass('X')}
               className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 selectedClass === 'X'
-                  ? 'bg-[#143c14] text-[#ffcc00] shadow-sm ring-2 ring-[#ffcc00]'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  ? 'bg-[#143c14] dark:bg-emerald-800 text-[#ffcc00] shadow-sm ring-2 ring-[#ffcc00]'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
               }`}
             >
               Kelas X ({is2526 ? '15 Mapel' : '15 Mapel'})
@@ -209,8 +209,8 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
               onClick={() => setSelectedClass('XI')}
               className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 selectedClass === 'XI'
-                  ? 'bg-[#143c14] text-[#ffcc00] shadow-sm ring-2 ring-[#ffcc00]'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  ? 'bg-[#143c14] dark:bg-emerald-800 text-[#ffcc00] shadow-sm ring-2 ring-[#ffcc00]'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
               }`}
             >
               Kelas XI ({is2526 ? '15 Mapel' : '14 Mapel'})
@@ -219,8 +219,8 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
               onClick={() => setSelectedClass('XII')}
               className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 selectedClass === 'XII'
-                  ? 'bg-[#143c14] text-[#ffcc00] shadow-sm ring-2 ring-[#ffcc00]'
-                  : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  ? 'bg-[#143c14] dark:bg-emerald-800 text-[#ffcc00] shadow-sm ring-2 ring-[#ffcc00]'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
               }`}
             >
               Kelas XII (Industri & PKL)
@@ -228,25 +228,25 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
           </div>
 
           <div className="flex items-center gap-3 text-xs">
-            <div className="bg-emerald-100/80 text-emerald-950 px-3 py-1 rounded-lg border border-emerald-300 font-bold">
+            <div className="bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-200 px-3 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800 font-bold">
               <span>Beban/Pekan: </span>
-              <span className="text-emerald-900 font-mono font-black text-sm">{totalJpPerWeek} JP</span>
+              <span className="text-emerald-900 dark:text-emerald-300 font-mono font-black text-sm">{totalJpPerWeek} JP</span>
             </div>
-            <div className="bg-amber-100/80 text-amber-950 px-3 py-1 rounded-lg border border-amber-300 font-bold">
+            <div className="bg-amber-100/80 dark:bg-amber-950/80 text-amber-950 dark:text-amber-200 px-3 py-1 rounded-lg border border-amber-300 dark:border-amber-800 font-bold">
               <span>Total Alokasi: </span>
-              <span className="text-amber-950 font-mono font-black text-sm">{grandTotalJp} JP</span>
+              <span className="text-amber-950 dark:text-amber-300 font-mono font-black text-sm">{grandTotalJp} JP</span>
             </div>
           </div>
         </div>
 
         {/* Scrollable Matrix Table */}
-        <div className="flex-1 overflow-auto border border-slate-200 rounded-xl bg-white shadow-2xs">
+        <div className="flex-1 overflow-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-2xs">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
-              <tr className="bg-[#143c14] text-white border-b-2 border-[#ffcc00]">
+              <tr className="bg-[#143c14] dark:bg-emerald-950 text-white border-b-2 border-[#ffcc00]">
                 <th className="p-2.5 w-10 text-center font-bold">NO</th>
                 <th className="p-2.5 font-extrabold min-w-[220px]">MATA PELAJARAN (KELAS {selectedClass} - {academicYear})</th>
-                <th className="p-2.5 text-center font-extrabold bg-[#0e2a0e] border-r border-emerald-900">JP/WKW</th>
+                <th className="p-2.5 text-center font-extrabold bg-[#0e2a0e] dark:bg-emerald-900 border-r border-emerald-900 dark:border-emerald-800">JP/WKW</th>
                 
                 {/* Semester 1 Header */}
                 <th className="p-2.5 text-center font-extrabold bg-amber-900/60 border-r border-amber-800">
@@ -263,42 +263,42 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-200">
               {subjects.map((row) => (
-                <tr key={row.no} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-2 text-center text-slate-500 font-bold">{row.no}</td>
-                  <td className="p-2 font-bold text-slate-900">{row.name}</td>
-                  <td className="p-2 text-center font-extrabold font-mono text-emerald-900 bg-emerald-50/50 border-r border-slate-200">
+                <tr key={row.no} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="p-2 text-center text-slate-500 dark:text-slate-400 font-bold">{row.no}</td>
+                  <td className="p-2 font-bold text-slate-900 dark:text-slate-100">{row.name}</td>
+                  <td className="p-2 text-center font-extrabold font-mono text-emerald-900 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30 border-r border-slate-200 dark:border-slate-800">
                     {row.jpPerWeek} JP
                   </td>
                   
                   {/* Semester 1 Total */}
-                  <td className="p-2 text-center font-bold font-mono text-amber-950 bg-amber-50/30 border-r border-slate-200">
-                    {row.smt1TotalJp} JP <span className="text-[10px] text-slate-400 font-normal">({row.smt1Weeks} Pekan)</span>
+                  <td className="p-2 text-center font-bold font-mono text-amber-950 dark:text-amber-200 bg-amber-50/30 dark:bg-amber-950/20 border-r border-slate-200 dark:border-slate-800">
+                    {row.smt1TotalJp} JP <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">({row.smt1Weeks} Pekan)</span>
                   </td>
 
                   {/* Semester 2 Total */}
-                  <td className="p-2 text-center font-bold font-mono text-sky-950 bg-sky-50/30 border-r border-slate-200">
+                  <td className="p-2 text-center font-bold font-mono text-sky-950 dark:text-sky-200 bg-sky-50/30 dark:bg-sky-950/20 border-r border-slate-200 dark:border-slate-800">
                     {row.smt2TotalJp > 0 ? (
-                      <>{row.smt2TotalJp} JP <span className="text-[10px] text-slate-400 font-normal">({row.smt2Weeks} Pekan)</span></>
+                      <>{row.smt2TotalJp} JP <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">({row.smt2Weeks} Pekan)</span></>
                     ) : (
-                      <span className="text-slate-400 font-normal italic">PKL / Ujian Akhir</span>
+                      <span className="text-slate-400 dark:text-slate-500 font-normal italic">PKL / Ujian Akhir</span>
                     )}
                   </td>
 
                   {/* Grand Total */}
-                  <td className="p-2 text-center font-black font-mono text-slate-950 bg-amber-100/60">
+                  <td className="p-2 text-center font-black font-mono text-slate-950 dark:text-slate-100 bg-amber-100/60 dark:bg-amber-950/40">
                     {row.grandTotalJp} JP
                   </td>
                 </tr>
               ))}
 
               {/* Total Footer Row */}
-              <tr className="bg-[#143c14] text-white font-black text-xs border-t-2 border-[#ffcc00]">
+              <tr className="bg-[#143c14] dark:bg-emerald-950 text-white font-black text-xs border-t-2 border-[#ffcc00]">
                 <td colSpan={2} className="p-2.5 text-right uppercase tracking-wider text-[#ffcc00]">
                   JUMLAH TOTAL JAM PELAJARAN (JP)
                 </td>
-                <td className="p-2.5 text-center font-mono text-[#ffcc00] text-sm bg-[#0e2a0e]">
+                <td className="p-2.5 text-center font-mono text-[#ffcc00] text-sm bg-[#0e2a0e] dark:bg-emerald-900">
                   {totalJpPerWeek} JP
                 </td>
                 <td className="p-2.5 text-center font-mono text-amber-300 text-sm bg-amber-950/80">
@@ -316,8 +316,8 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
         </div>
 
         {/* Special Activity Schedule Cards per Selected Class & Academic Year */}
-        <div className="mt-3 pt-3 border-t border-slate-200 shrink-0">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
+        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-emerald-800" />
             <span>Alokasi Agenda Khusus & Tahapan Belajar (Kelas {selectedClass} - {academicYear}):</span>
           </h4>
@@ -325,39 +325,39 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
           {is2526 ? (
             selectedClass === 'X' || selectedClass === 'XI' ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
-                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-950">
-                  <span className="font-bold block text-amber-900">Sept (Pekan 5) & Feb (Pekan 4)</span>
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200">
+                  <span className="font-bold block text-amber-900 dark:text-amber-300">Sept (Pekan 5) & Feb (Pekan 4)</span>
                   <span>Sumatif Tengah Semester (STS) Ganjil & Genap</span>
                 </div>
-                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-950">
-                  <span className="font-bold block text-rose-900">Desember (Pekan 1-2)</span>
+                <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-950 dark:text-rose-200">
+                  <span className="font-bold block text-rose-900 dark:text-rose-300">Desember (Pekan 1-2)</span>
                   <span>Sumatif Akhir Semester (SAS) Ganjil</span>
                 </div>
-                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950">
-                  <span className="font-bold block text-emerald-900">Februari - Maret</span>
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200">
+                  <span className="font-bold block text-emerald-900 dark:text-emerald-300">Februari - Maret</span>
                   <span>Libur Awal Ramadhan, Pesantren & Idul Fitri</span>
                 </div>
-                <div className="p-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-950">
-                  <span className="font-bold block text-sky-900">Juni (Pekan 1-2)</span>
+                <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-950 dark:text-sky-200">
+                  <span className="font-bold block text-sky-900 dark:text-sky-300">Juni (Pekan 1-2)</span>
                   <span>SAS Genap / UKK Kenaikan Kelas & Rapor</span>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
-                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-950">
-                  <span className="font-bold block text-amber-900">Sept - Nov (Smt 1)</span>
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200">
+                  <span className="font-bold block text-amber-900 dark:text-amber-300">Sept - Nov (Smt 1)</span>
                   <span>SAS, UKK, Persiapan TKA, TKA & Ujian Sekolah</span>
                 </div>
-                <div className="p-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-950">
-                  <span className="font-bold block text-sky-900">Nov - Mar (5 Bulan)</span>
+                <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-950 dark:text-sky-200">
+                  <span className="font-bold block text-sky-900 dark:text-sky-300">Nov - Mar (5 Bulan)</span>
                   <span>Pembekalan & Praktek Kerja Lapangan (PKL)</span>
                 </div>
-                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950">
-                  <span className="font-bold block text-emerald-900">April</span>
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200">
+                  <span className="font-bold block text-emerald-900 dark:text-emerald-300">April</span>
                   <span>Ujian PKL & Ujian Tasmi' Al-Qur'an</span>
                 </div>
-                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-950">
-                  <span className="font-bold block text-rose-900">Mei</span>
+                <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-950 dark:text-rose-200">
+                  <span className="font-bold block text-rose-900 dark:text-rose-300">Mei</span>
                   <span>Persiapan & Wisuda Penamatan Kelas XII</span>
                 </div>
               </div>
@@ -365,39 +365,39 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
           ) : (
             selectedClass === 'X' || selectedClass === 'XI' ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
-                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-950">
-                  <span className="font-bold block text-amber-900">Juli (Pekan 3)</span>
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200">
+                  <span className="font-bold block text-amber-900 dark:text-amber-300">Juli (Pekan 3)</span>
                   <span>MPLS & Masa Transisi Santri Baru</span>
                 </div>
-                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-950">
-                  <span className="font-bold block text-rose-900">Desember (Pekan 1-2)</span>
+                <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-950 dark:text-rose-200">
+                  <span className="font-bold block text-rose-900 dark:text-rose-300">Desember (Pekan 1-2)</span>
                   <span>Sumatif Akhir Semester (SAS) Ganjil</span>
                 </div>
-                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950">
-                  <span className="font-bold block text-emerald-900">Februari - Maret</span>
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200">
+                  <span className="font-bold block text-emerald-900 dark:text-emerald-300">Februari - Maret</span>
                   <span>Pesantren Ramadhan & Libur Idul Fitri</span>
                 </div>
-                <div className="p-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-950">
-                  <span className="font-bold block text-sky-900">Juni (Pekan 1-2)</span>
+                <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-950 dark:text-sky-200">
+                  <span className="font-bold block text-sky-900 dark:text-sky-300">Juni (Pekan 1-2)</span>
                   <span>SAS Genap / UKK & Penerimaan Rapor</span>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
-                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-950">
-                  <span className="font-bold block text-amber-900">Sept - Okt (Smt 1)</span>
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200">
+                  <span className="font-bold block text-amber-900 dark:text-amber-300">Sept - Okt (Smt 1)</span>
                   <span>Ujian Tasmi', SAS, TKA & Ujian Sekolah</span>
                 </div>
-                <div className="p-2 rounded-lg bg-sky-50 border border-sky-200 text-sky-950">
-                  <span className="font-bold block text-sky-900">Nov - Mar (5 Bulan)</span>
+                <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-950 dark:text-sky-200">
+                  <span className="font-bold block text-sky-900 dark:text-sky-300">Nov - Mar (5 Bulan)</span>
                   <span>Pembekalan & Praktek Kerja Lapangan (PKL)</span>
                 </div>
-                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950">
-                  <span className="font-bold block text-emerald-900">April</span>
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200">
+                  <span className="font-bold block text-emerald-900 dark:text-emerald-300">April</span>
                   <span>Laporan PKL, Tes SNBT & UKK Industri</span>
                 </div>
-                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-950">
-                  <span className="font-bold block text-rose-900">Mei</span>
+                <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-950 dark:text-rose-200">
+                  <span className="font-bold block text-rose-900 dark:text-rose-300">Mei</span>
                   <span>Persiapan & Wisuda Penamatan (Pena Matan)</span>
                 </div>
               </div>
@@ -406,11 +406,11 @@ export const HebMatrixModal: React.FC<HebMatrixModalProps> = ({
         </div>
 
         {/* Footer info & close */}
-        <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 shrink-0">
+        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 shrink-0">
           <span>Data terintegrasi secara otomatis sesuai SK Kurikulum Operasional Satuan Pendidikan (KOSP) TA. {academicYear}.</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 font-bold text-white bg-[#143c14] hover:bg-[#0b240b] rounded-lg transition-colors cursor-pointer"
+            className="px-4 py-1.5 font-bold text-white bg-[#143c14] dark:bg-emerald-800 hover:bg-[#0b240b] dark:hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer"
           >
             Selesai
           </button>

@@ -73,9 +73,9 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
     const q = searchFilter.toLowerCase();
     return events.filter(
       (e) =>
-        e.title.toLowerCase().includes(q) ||
-        e.description.toLowerCase().includes(q) ||
-        e.location.toLowerCase().includes(q)
+        (e.title || '').toLowerCase().includes(q) ||
+        (e.description || '').toLowerCase().includes(q) ||
+        (e.location || '').toLowerCase().includes(q)
     );
   }, [events, searchFilter]);
 
@@ -112,9 +112,9 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-[#143c14]/20 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border-2 border-[#143c14]/20 dark:border-emerald-800/60 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="bg-[#143c14] text-white p-4 sm:p-5 border-b-4 border-[#ffcc00] flex items-center justify-between shrink-0">
+        <div className="bg-[#143c14] dark:bg-emerald-950 text-white p-4 sm:p-5 border-b-4 border-[#ffcc00] dark:border-emerald-500 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#ffcc00] text-[#143c14] flex items-center justify-center font-black shadow-xs">
               <Calendar className="w-5 h-5 text-[#143c14]" />
@@ -141,7 +141,7 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
         <div className="overflow-y-auto flex-1 p-4 sm:p-6 space-y-5">
           {/* Step 1: Choose Scope */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2.5">
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2.5">
               1. Pilih Cakupan Agenda yang Ingin Diekspor
             </label>
 
@@ -151,17 +151,17 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
                 onClick={() => setScope('all')}
                 className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
                   scope === 'all'
-                    ? 'border-[#143c14] bg-emerald-50/60 ring-1 ring-[#143c14]'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-[#143c14] dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-1 ring-[#143c14] dark:ring-emerald-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800'
                 }`}
               >
-                <div className="font-extrabold text-slate-900 flex items-center justify-between">
+                <div className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center justify-between">
                   <span>Seluruh Kalender</span>
-                  <span className="bg-[#143c14] text-white text-[10px] px-1.5 py-0.2 rounded font-bold">
+                  <span className="bg-[#143c14] dark:bg-emerald-700 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">
                     {events.length}
                   </span>
                 </div>
-                <p className="text-slate-500 text-[11px] mt-1">
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-1">
                   Semua agenda Gasal & Genap TA {academicYear}
                 </p>
               </button>
@@ -171,17 +171,17 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
                 onClick={() => setScope('ganjil')}
                 className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
                   scope === 'ganjil'
-                    ? 'border-[#143c14] bg-emerald-50/60 ring-1 ring-[#143c14]'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-[#143c14] dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-1 ring-[#143c14] dark:ring-emerald-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800'
                 }`}
               >
-                <div className="font-extrabold text-slate-900 flex items-center justify-between">
+                <div className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center justify-between">
                   <span>Semester Ganjil</span>
                   <span className="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.2 rounded font-bold">
                     {events.filter((e) => e.semester === 'ganjil').length}
                   </span>
                 </div>
-                <p className="text-slate-500 text-[11px] mt-1">
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-1">
                   Juli s/d Desember 2026
                 </p>
               </button>
@@ -191,17 +191,17 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
                 onClick={() => setScope('genap')}
                 className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
                   scope === 'genap'
-                    ? 'border-[#143c14] bg-emerald-50/60 ring-1 ring-[#143c14]'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-[#143c14] dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-1 ring-[#143c14] dark:ring-emerald-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800'
                 }`}
               >
-                <div className="font-extrabold text-slate-900 flex items-center justify-between">
+                <div className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center justify-between">
                   <span>Semester Genap</span>
                   <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">
                     {events.filter((e) => e.semester === 'genap').length}
                   </span>
                 </div>
-                <p className="text-slate-500 text-[11px] mt-1">
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-1">
                   Januari s/d Juni 2027
                 </p>
               </button>
@@ -211,13 +211,13 @@ export const ExportICalModal: React.FC<ExportICalModalProps> = ({
                 onClick={() => setScope('category')}
                 className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
                   scope === 'category'
-                    ? 'border-[#143c14] bg-emerald-50/60 ring-1 ring-[#143c14]'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-[#143c14] dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-1 ring-[#143c14] dark:ring-emerald-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800'
                 }`}
               >
-                <div className="font-extrabold text-slate-900 flex items-center justify-between">
+                <div className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center justify-between">
                   <span>Berdasarkan Kategori</span>
-                  <Filter className="w-3.5 h-3.5 text-[#143c14]" />
+                  <Filter className="w-3.5 h-3.5 text-[#143c14] dark:text-emerald-400" />
                 </div>
                 <p className="text-slate-500 text-[11px] mt-1">
                   Pilih kategori tertentu saja

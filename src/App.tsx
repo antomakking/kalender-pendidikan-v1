@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { AlertTriangle } from 'lucide-react';
 import { AgendaView } from './components/AgendaView.tsx';
 import { ControlsBar } from './components/ControlsBar.tsx';
 import { EventDetailModal } from './components/EventDetailModal.tsx';
@@ -23,6 +24,7 @@ import { INITIAL_EVENTS } from './data/seedEvents.ts';
 import { AcademicEvent, CalendarView, ClassFilter, EventCategory, SemesterFilter } from './types.ts';
 import {
   CATEGORIES_CONFIG,
+  deduplicateEvents,
   formatDateRange,
   formatDateToISO,
   formatIndonesianDate,
@@ -72,21 +74,59 @@ export default function App() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Filter out any P5 items
-          return parsed.filter(
-            (e: AcademicEvent) =>
-              !e.title.toLowerCase().includes('p5') &&
-              !e.description.toLowerCase().includes('p5')
+          // Filter out any P5 items & deduplicate
+          return deduplicateEvents(
+            parsed.filter(
+              (e: AcademicEvent) =>
+                e &&
+                typeof e === 'object' &&
+                typeof e.title === 'string' &&
+                !e.title.toLowerCase().includes('p5') &&
+                !(typeof e.description === 'string' && e.description.toLowerCase().includes('p5'))
+            )
           );
         }
       }
     } catch (e) {
       console.error('Failed to load events from storage', e);
     }
-    return INITIAL_EVENTS.filter(
-      (e) => !e.title.toLowerCase().includes('p5') && !e.description.toLowerCase().includes('p5')
+    return deduplicateEvents(
+      INITIAL_EVENTS.filter(
+        (e) =>
+          e &&
+          typeof e.title === 'string' &&
+          !e.title.toLowerCase().includes('p5') &&
+          !(typeof e.description === 'string' && e.description.toLowerCase().includes('p5'))
+      )
     );
   });
+
+  // Dark Mode State & Effect
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('smk_it_kalender_theme');
+      if (saved !== null) {
+        return saved === 'dark';
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('smk_it_kalender_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('smk_it_kalender_theme', 'light');
+      }
+    } catch (e) {
+      console.error('Failed to update theme mode', e);
+    }
+  }, [isDarkMode]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -104,7 +144,8 @@ export default function App() {
     const now = new Date();
     const curY = now.getFullYear();
     const curM = now.getMonth();
-    return curM >= 6 ? `${curY}/${curY + 1}` : `${curY - 1}/${curY}`;
+    const computed = curM >= 6 ? `${curY}/${curY + 1}` : `${curY - 1}/${curY}`;
+    return computed === '2025/2026' ? '2026/2027' : computed;
   });
   const [currentYear, setCurrentYear] = useState<number>(() => new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState<number>(() => new Date().getMonth());
@@ -232,37 +273,43 @@ export default function App() {
     const academicStartISO = `${startYear}-07-01`;
     const academicEndISO = `${endYear}-06-30`;
 
-    return events.filter((evt) => {
-      // Academic Year Filter
-      const matchYear = evt.academicYear
-        ? evt.academicYear === academicYear
-        : evt.startDate >= academicStartISO && evt.startDate <= academicEndISO;
-      if (!matchYear) return false;
+    return deduplicateEvents(
+      events.filter((evt) => {
+        // Academic Year Filter
+        const matchYear = evt.academicYear
+          ? evt.academicYear === academicYear
+          : evt.startDate >= academicStartISO && evt.startDate <= academicEndISO;
+        if (!matchYear) return false;
 
-      // Semester filter
-      if (semester !== 'all' && evt.semester !== semester) return false;
+        // Semester filter
+        if (semester !== 'all' && evt.semester !== semester) return false;
 
-      // Class Level filter (Kelas X, XI, XII)
-      if (classFilter !== 'all') {
-        const eventClasses = getEventClasses(evt);
-        if (!eventClasses.includes(classFilter)) return false;
-      }
+        // Class Level filter (Kelas X, XI, XII)
+        if (classFilter !== 'all') {
+          const eventClasses = getEventClasses(evt);
+          if (!eventClasses.includes(classFilter)) return false;
+        }
 
-      // Category filter
-      if (categoryFilter !== 'all' && evt.category !== categoryFilter) return false;
+        // Category filter
+        if (categoryFilter !== 'all') {
+          if (categoryFilter === 'kbm' && evt.category !== 'kbm' && evt.category !== 'academic') return false;
+          if (categoryFilter === 'school' && evt.category !== 'school' && evt.category !== 'teacher') return false;
+          if (categoryFilter !== 'kbm' && categoryFilter !== 'school' && evt.category !== categoryFilter) return false;
+        }
 
-      // Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchTitle = evt.title.toLowerCase().includes(q);
-        const matchDesc = evt.description.toLowerCase().includes(q);
-        const matchLoc = evt.location.toLowerCase().includes(q);
-        const matchAud = evt.audience.toLowerCase().includes(q);
-        if (!matchTitle && !matchDesc && !matchLoc && !matchAud) return false;
-      }
+        // Search Query
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchTitle = (evt.title || '').toLowerCase().includes(q);
+          const matchDesc = (evt.description || '').toLowerCase().includes(q);
+          const matchLoc = (evt.location || '').toLowerCase().includes(q);
+          const matchAud = (evt.audience || '').toLowerCase().includes(q);
+          if (!matchTitle && !matchDesc && !matchLoc && !matchAud) return false;
+        }
 
-      return true;
-    });
+        return true;
+      })
+    );
   }, [events, academicYear, semester, classFilter, categoryFilter, searchQuery]);
 
   // Event counts for category & class buttons (strictly scoped to selected academic year)
@@ -285,9 +332,12 @@ export default function App() {
 
     return {
       all: baseList.length,
-      academic: baseList.filter((e) => e.category === 'academic').length,
-      holiday: baseList.filter((e) => e.category === 'holiday').length,
+      kbm: baseList.filter((e) => e.category === 'kbm' || e.category === 'academic').length,
+      assessment: baseList.filter((e) => e.category === 'assessment').length,
+      school: baseList.filter((e) => e.category === 'school' || e.category === 'teacher').length,
       student: baseList.filter((e) => e.category === 'student').length,
+      holiday: baseList.filter((e) => e.category === 'holiday').length,
+      academic: baseList.filter((e) => e.category === 'academic').length,
       teacher: baseList.filter((e) => e.category === 'teacher').length,
     };
   }, [events, academicYear, semester, classFilter]);
@@ -415,28 +465,48 @@ export default function App() {
   };
 
   // 9. Data Modification Handlers
-  const handleSaveEvent = (savedEvent: AcademicEvent) => {
+  const handleSaveEvent = (savedEvent: AcademicEvent | AcademicEvent[]) => {
+    const newItems = Array.isArray(savedEvent) ? savedEvent : [savedEvent];
     setEvents((prev) => {
-      const exists = prev.some((e) => e.id === savedEvent.id);
-      if (exists) {
-        return prev.map((e) => (e.id === savedEvent.id ? savedEvent : e));
+      let updated = [...prev];
+      for (const item of newItems) {
+        const existsIndex = updated.findIndex((e) => e.id === item.id);
+        if (existsIndex >= 0) {
+          updated[existsIndex] = item;
+        } else {
+          updated = [item, ...updated];
+        }
       }
-      return [savedEvent, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (err) {
+        console.error('Failed to update storage after save:', err);
+      }
+      return updated;
     });
     setEditingEvent(null);
+    const count = newItems.length;
     setToast({
       id: Date.now(),
-      message: `Agenda "${savedEvent.title}" berhasil disimpan ke kalender.`,
+      message:
+        count > 1
+          ? `Sebanyak ${count} sesi agenda berulang "${newItems[0].title}" berhasil disimpan ke kalender.`
+          : `Agenda "${newItems[0].title}" berhasil disimpan ke kalender.`,
     });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleDeleteEvent = (id: string) => {
+  const handleDeleteEvent = (id: string, deleteSeries = false) => {
     const eventToDelete = events.find((e) => e.id === id);
     if (!eventToDelete) return;
 
     setEvents((prev) => {
-      const updated = prev.filter((e) => e.id !== id);
+      let updated: AcademicEvent[];
+      if (deleteSeries && eventToDelete.recurrenceId) {
+        updated = prev.filter((e) => e.recurrenceId !== eventToDelete.recurrenceId);
+      } else {
+        updated = prev.filter((e) => e.id !== id);
+      }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       } catch (err) {
@@ -448,26 +518,30 @@ export default function App() {
     setSelectedEvent(null);
     setToast({
       id: Date.now(),
-      message: `Agenda "${eventToDelete.title}" berhasil dihapus.`,
+      message:
+        deleteSeries && eventToDelete.recurrenceId
+          ? `Seluruh seri agenda berulang "${eventToDelete.title}" berhasil dihapus.`
+          : `Agenda "${eventToDelete.title}" berhasil dihapus.`,
+    });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
+
+  const confirmResetData = () => {
+    setEvents([]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    setIsResetConfirmOpen(false);
+    setToast({
+      id: Date.now(),
+      message: 'Seluruh kegiatan berhasil dikosongkan. Siap untuk input agenda riil sekolah.',
     });
     setTimeout(() => setToast(null), 3000);
   };
 
   const handleResetData = () => {
     executeWithPinProtection(() => {
-      if (
-        window.confirm(
-          'Kosongkan seluruh agenda kalender? Anda dapat memasukkan kembali agenda kegiatan riil kapan saja.'
-        )
-      ) {
-        setEvents([]);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-        setToast({
-          id: Date.now(),
-          message: 'Seluruh kegiatan berhasil dikosongkan. Siap untuk input agenda riil sekolah.',
-        });
-        setTimeout(() => setToast(null), 3000);
-      }
+      setIsResetConfirmOpen(true);
     }, 'Kosongkan Seluruh Agenda');
   };
 
@@ -496,10 +570,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-200 selection:text-emerald-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-200 selection:text-emerald-900 transition-colors duration-200">
       {/* Header */}
       <Header
         academicYear={academicYear}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
         onAddEvent={() => handleOpenAddEvent()}
         onOpenPrint={() => setIsPrintModalOpen(true)}
         onOpenStandaloneExport={handleOpenStandaloneExport}
@@ -552,7 +628,7 @@ export default function App() {
         {/* Calendar Grid & Sidebar Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
           {/* Main Calendar View Area */}
-          <section className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+          <section className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden transition-colors">
             {filteredEvents.length === 0 ? (
               <div className="p-6 sm:p-12">
                 <EmptyState
@@ -664,7 +740,7 @@ export default function App() {
 
           {/* Upcoming Events Sidebar */}
           <UpcomingSidebar
-            events={events}
+            events={filteredEvents}
             todayStr={TODAY_STR}
             academicYear={academicYear}
             semester={semester}
@@ -697,17 +773,17 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 mt-12 no-print">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-xs text-slate-500 dark:text-slate-400 mt-12 no-print transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div>
-            <p className="font-semibold text-slate-800">
+            <p className="font-semibold text-slate-800 dark:text-slate-200">
               © 2026 SMK IT Ibnul Qayyim Makassar · Yayasan Pendidikan Islam Ibnul Qayyim Sudiang Makassar
             </p>
-            <p className="text-slate-400 mt-0.5">
+            <p className="text-slate-400 dark:text-slate-500 mt-0.5">
               NPSN: 70031494 · Konsentrasi Keahlian: Rekayasa Perangkat Lunak (RPL) & Bisnis Digital (BD)
             </p>
           </div>
-          <p className="text-slate-400 text-[11px]">
+          <p className="text-slate-400 dark:text-slate-500 text-[11px]">
             Jl. Goa Ria Taman Bunga 2, Laikang, Kec. Biringkanaya, Kota Makassar, Sulawesi Selatan 90242 · Telp: 0811 4411 432
           </p>
         </div>
@@ -781,6 +857,43 @@ export default function App() {
           setPendingProtectedAction(null);
         }}
       />
+
+      {/* Reset Calendar Confirmation Modal */}
+      {isResetConfirmOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-modal-backdrop"
+          onClick={() => setIsResetConfirmOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border-2 border-rose-200 dark:border-rose-900/60 relative animate-modal-slide-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center mb-4 text-rose-600 dark:text-rose-400">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Kosongkan Seluruh Agenda Kalender?</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+              Tindakan ini akan menghapus semua agenda dari kalender akademik. Anda tetap dapat memasukkan kembali agenda kegiatan riil kapan saja.
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsResetConfirmOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmResetData}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer shadow-2xs"
+              >
+                Ya, Kosongkan Kalender
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

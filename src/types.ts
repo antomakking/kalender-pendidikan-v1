@@ -1,4 +1,11 @@
-export type EventCategory = 'academic' | 'holiday' | 'student' | 'teacher';
+export type EventCategory =
+  | 'kbm'
+  | 'assessment'
+  | 'school'
+  | 'student'
+  | 'holiday'
+  | 'academic'
+  | 'teacher';
 
 export type ClassLevel = 'X' | 'XI' | 'XII';
 export type ClassFilter = 'all' | 'X' | 'XI' | 'XII';

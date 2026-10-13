@@ -11,6 +11,8 @@ import {
   Printer,
   ShieldCheck,
   Smartphone,
+  Sun,
+  Moon,
   X,
 } from 'lucide-react';
 import { formatRemainingTime } from '../utils/securityUtils.ts';
@@ -18,6 +20,8 @@ import { PWAInstallButton } from './PWAInstallButton.tsx';
 
 interface HeaderProps {
   academicYear?: string;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
   onAddEvent: () => void;
   onOpenPrint: () => void;
   onOpenStandaloneExport?: () => void;
@@ -32,6 +36,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   academicYear = '2026/2027',
+  isDarkMode = false,
+  onToggleDarkMode,
   onAddEvent,
   onOpenPrint,
   onOpenStandaloneExport,
@@ -60,8 +66,8 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="bg-[#143c14] border-b-4 border-[#ffcc00] text-white sticky top-0 z-30 shadow-md w-full max-w-full">
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-15 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 bg-[#143c14] w-full min-w-0">
+    <header className="bg-[#143c14] dark:bg-slate-900 border-b-4 border-[#ffcc00] dark:border-emerald-600 text-white sticky top-0 z-30 shadow-md w-full max-w-full">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-15 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 bg-[#143c14] dark:bg-slate-900 w-full min-w-0">
         
         {/* Zone 1: Institutional Wordmark & Branding (Flexible min-w-0) */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
@@ -107,6 +113,26 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Zone 3: Desktop Full Actions (Visible on lg and larger) */}
         <div className="hidden lg:flex items-center gap-2 shrink-0">
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={onToggleDarkMode}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors border border-white/20 whitespace-nowrap cursor-pointer shadow-2xs"
+            title={isDarkMode ? 'Beralih ke Mode Terang (Siang)' : 'Beralih ke Tema Gelap (Malam)'}
+            aria-label="Toggle Dark Mode"
+          >
+            {isDarkMode ? (
+              <>
+                <Sun className="w-4 h-4 text-[#ffcc00]" />
+                <span>Terang</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-4 h-4 text-emerald-300" />
+                <span>Tema Gelap</span>
+              </>
+            )}
+          </button>
+
           {/* Export iCal (.ics) / Google Calendar button */}
           <button
             onClick={onExportICal}
@@ -160,10 +186,38 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Dropdown Popover */}
             {isMobileMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 z-50 p-2 text-xs divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 top-full mt-2 w-58 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 p-2 text-xs divide-y divide-slate-100 dark:divide-slate-800 animate-in fade-in zoom-in-95 duration-150">
+                {/* Section 0: Theme Mode */}
+                <div className="p-1.5 py-2">
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1 px-1">
+                    Tampilan
+                  </div>
+                  <button
+                    onClick={() => {
+                      onToggleDarkMode?.();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors font-semibold text-slate-700 dark:text-slate-200 text-left"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {isDarkMode ? (
+                        <Sun className="w-4 h-4 text-[#ffcc00] shrink-0" />
+                      ) : (
+                        <Moon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      )}
+                      <div>
+                        <div>{isDarkMode ? 'Mode Terang (Siang)' : 'Tema Gelap (Malam)'}</div>
+                        <div className="text-[10px] text-slate-400 font-normal">
+                          {isDarkMode ? 'Beralih ke tampilan terang' : 'Lebih nyaman di mata'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
                 {/* Section 1: PWA Install Option */}
                 <div className="p-1.5 py-2">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-1">
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1 px-1">
                     Aplikasi Mobile
                   </div>
                   <div className="w-full">
@@ -182,12 +236,12 @@ export const Header: React.FC<HeaderProps> = ({
                       setIsMobileMenuOpen(false);
                       onOpenPrint();
                     }}
-                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors font-semibold text-slate-700 text-left"
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-slate-700 dark:text-slate-200 text-left"
                   >
-                    <Printer className="w-4 h-4 text-[#143c14] shrink-0" />
+                    <Printer className="w-4 h-4 text-[#143c14] dark:text-emerald-400 shrink-0" />
                     <div>
                       <div>Export PDF / Cetak Resmi</div>
-                      <div className="text-[10px] text-slate-400 font-normal">Cetak dokumen kalender</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">Cetak dokumen kalender</div>
                     </div>
                   </button>
 
@@ -196,12 +250,12 @@ export const Header: React.FC<HeaderProps> = ({
                       setIsMobileMenuOpen(false);
                       onExportICal?.();
                     }}
-                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors font-semibold text-slate-700 text-left"
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-slate-700 dark:text-slate-200 text-left"
                   >
-                    <Download className="w-4 h-4 text-[#143c14] shrink-0" />
+                    <Download className="w-4 h-4 text-[#143c14] dark:text-emerald-400 shrink-0" />
                     <div>
                       <div>Ekspor .ics (Google Calendar)</div>
-                      <div className="text-[10px] text-slate-400 font-normal">Sinkron ke kalender HP</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">Sinkron ke kalender HP</div>
                     </div>
                   </button>
                 </div>

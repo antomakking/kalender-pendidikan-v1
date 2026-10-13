@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Flag, GripVertical, MapPin, Plus, Users } from 'lucide-react';
+import { Calendar, Clock, GripVertical, MapPin, Plus, Users } from 'lucide-react';
 import { AcademicEvent, EventCategory } from '../types.ts';
 import {
   CATEGORIES_CONFIG,
@@ -8,7 +8,6 @@ import {
   getWeekDays,
 } from '../utils/calendarUtils.ts';
 import { HighlightText } from './HighlightText.tsx';
-import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 interface WeekViewProps {
   centerDateStr: string;
@@ -73,13 +72,13 @@ export const WeekView: React.FC<WeekViewProps> = ({
 
   return (
     <div className="p-4 sm:p-5 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h3 className="font-bold text-slate-900 text-base">
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
             Jadwal Pekan Ini ({formatIndonesianDate(weekDays[0].dateStr)} –{' '}
             {formatIndonesianDate(weekDays[6].dateStr)})
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Tarik dan lepas (drag & drop) kartu agenda untuk memindahkan jadwal ke hari lain dengan cepat.
           </p>
         </div>
@@ -100,26 +99,26 @@ export const WeekView: React.FC<WeekViewProps> = ({
               onDrop={(e) => handleDrop(e, dateStr)}
               className={`border rounded-xl p-4 transition-all relative ${
                 isDragOver
-                  ? 'border-2 border-dashed border-emerald-600 bg-emerald-50/80 shadow-md ring-2 ring-emerald-500/30'
+                  ? 'border-2 border-dashed border-emerald-600 bg-emerald-50/80 dark:bg-emerald-950/80 shadow-md ring-2 ring-emerald-500/30'
                   : hasHoliday
-                  ? 'border-2 border-red-600 bg-red-50/50 ring-2 ring-red-400/30 shadow-xs'
+                  ? 'border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20'
                   : isToday
-                  ? 'border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/40 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
+                  ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 ring-1 ring-emerald-500/40 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
               {/* Day Row Header */}
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <div
                     className={`text-center px-2.5 py-1 rounded-lg ${
                       hasHoliday
                         ? 'bg-red-600 text-white font-bold shadow-2xs'
                         : isToday
-                        ? 'bg-emerald-700 text-white font-bold'
+                        ? 'bg-emerald-700 dark:bg-emerald-800 text-white font-bold'
                         : idx === 0
-                        ? 'bg-rose-50 text-rose-700 font-bold'
-                        : 'bg-slate-100 text-slate-800 font-semibold'
+                        ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 font-bold'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold'
                     }`}
                   >
                     <span className="text-xs block leading-tight">{dayName}</span>
@@ -127,24 +126,15 @@ export const WeekView: React.FC<WeekViewProps> = ({
                   </div>
 
                   <div>
-                    <span className="font-bold text-sm text-slate-900 block">
+                    <span className="font-bold text-sm text-slate-900 dark:text-slate-100 block">
                       {formatIndonesianDate(dateStr, { withDayName: false })}
                     </span>
-                    <span className="text-xs text-slate-500">
-                      {hasHoliday
-                        ? 'Hari Libur Nasional Resmi'
-                        : dayEvents.length === 0
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {dayEvents.length === 0
                         ? 'KBM Reguler Sesuai Jadwal'
                         : `${dayEvents.length} Agenda Khusus`}
                     </span>
                   </div>
-
-                  {hasHoliday && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white ml-2 flex items-center gap-1.5 shadow-2xs">
-                      <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
-                      Libur Nasional
-                    </span>
-                  )}
 
                   {isToday && (
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-700 text-white ml-2">
@@ -161,16 +151,8 @@ export const WeekView: React.FC<WeekViewProps> = ({
 
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => onSelectDate(dateStr, 'holiday')}
-                    className="inline-flex items-center gap-1 text-[11px] text-red-700 hover:text-white hover:bg-red-600 font-bold px-2 py-1 rounded-md border border-red-300 transition-colors shadow-2xs"
-                    title="Tandai tanggal ini sebagai Hari Libur Nasional"
-                  >
-                    <Flag className="w-3 h-3 fill-current" />
-                    <span className="hidden sm:inline">Libur</span>
-                  </button>
-                  <button
                     onClick={() => onSelectDate(dateStr)}
-                    className="inline-flex items-center gap-1 text-xs text-emerald-700 hover:text-emerald-800 font-semibold px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold px-2 py-1 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Tambah</span>
@@ -180,10 +162,10 @@ export const WeekView: React.FC<WeekViewProps> = ({
 
               {/* Events for this Day */}
               {dayEvents.length === 0 ? (
-                <div className="py-3 text-xs text-slate-400 italic flex items-center justify-between">
+                <div className="py-3 text-xs text-slate-400 dark:text-slate-500 italic flex items-center justify-between">
                   <span>Tidak ada agenda khusus. Anda dapat menarik agenda dari hari lain ke sini.</span>
                   {isDragOver && (
-                    <span className="text-emerald-700 font-semibold text-xs not-italic">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold text-xs not-italic">
                       Lepaskan agenda di sini ↓
                     </span>
                   )}
@@ -196,10 +178,10 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     const isBeingDragged = draggingEventId === evt.id;
                     const isSearchMatch = Boolean(
                       searchQuery?.trim() &&
-                      (evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       evt.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       evt.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       evt.audience.toLowerCase().includes(searchQuery.toLowerCase()))
+                      ((evt.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       (evt.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       (evt.location || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       (evt.audience || '').toLowerCase().includes(searchQuery.toLowerCase()))
                     );
 
                     return (
@@ -210,11 +192,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                         onDragEnd={handleDragEnd}
                         onClick={() => onSelectEvent(evt)}
                         title="Tahan & geser untuk menjadwalkan ulang ke tanggal lain"
-                        className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing hover:shadow-xs select-none group/card ${
-                          isHolidayEvt
-                            ? 'border-2 border-red-600 bg-red-50/60 shadow-xs'
-                            : `${cat.borderColor} bg-white hover:border-slate-400`
-                        } ${
+                        className={`p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing hover:shadow-xs select-none group/card ${cat.borderColor} bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-600 ${
                           isSearchMatch
                             ? 'ring-2 ring-amber-400 border-amber-400 shadow-md'
                             : ''
@@ -224,39 +202,36 @@ export const WeekView: React.FC<WeekViewProps> = ({
                       >
                         <div className="flex items-center justify-between gap-2 mb-1.5">
                           <div className="flex items-center gap-1.5">
-                            <GripVertical className="w-3.5 h-3.5 text-slate-400 group-hover/card:text-slate-600 shrink-0" />
+                            <GripVertical className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover/card:text-slate-600 dark:group-hover/card:text-slate-300 shrink-0" />
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1 ${
-                                isHolidayEvt ? 'bg-red-600' : cat.bgSolid
-                              }`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1 ${cat.bgSolid}`}
                             >
-                              {isHolidayEvt && <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />}
-                              <span>{isHolidayEvt ? 'Libur Nasional' : cat.label}</span>
+                              <span>{cat.label}</span>
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400" />
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                             {evt.startTime && evt.endTime
                               ? `${evt.startTime} – ${evt.endTime} WITA`
                               : 'Sepanjang Hari'}
                           </span>
                         </div>
 
-                        <h4 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2">
+                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm leading-snug line-clamp-2">
                           <HighlightText text={evt.title} query={searchQuery} />
                         </h4>
 
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
                           <HighlightText text={evt.description} query={searchQuery} />
                         </p>
 
-                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
-                          <div className="flex items-center gap-1 text-slate-700">
-                            <MapPin className="w-3 h-3 text-emerald-600" />
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                          <div className="flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                            <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                             <span className="truncate max-w-[150px]">{evt.location}</span>
                           </div>
-                          <div className="flex items-center gap-1 text-slate-500">
-                            <Users className="w-3 h-3 text-emerald-600" />
+                          <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                            <Users className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                             <span className="truncate max-w-[150px]">{evt.audience}</span>
                           </div>
                         </div>

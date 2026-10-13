@@ -8,6 +8,7 @@ import {
   List,
   MapPin,
   Plus,
+  Repeat,
   Sparkles,
   Users,
 } from 'lucide-react';
@@ -20,7 +21,6 @@ import {
 } from '../utils/calendarUtils.ts';
 import { EmptyState } from './EmptyState.tsx';
 import { HighlightText } from './HighlightText.tsx';
-import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 export interface EventDisplayStyle {
   bgSolid: string;
@@ -308,22 +308,20 @@ export const MonthView: React.FC<MonthViewProps> = ({
                 }}
                 className={`grow min-w-0 min-h-[118px] p-2 rounded-xl transition-all flex flex-col justify-between cursor-pointer group relative overflow-visible hover:z-30 w-full ${
                   isDragOver
-                    ? 'border-2 border-dashed border-emerald-600 bg-emerald-50/90 shadow-md scale-[1.01] ring-2 ring-emerald-500/30 z-10'
+                    ? 'border-2 border-dashed border-emerald-600 dark:border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/80 shadow-md scale-[1.01] ring-2 ring-emerald-500/30 z-10'
                     : hasHoliday
-                    ? 'border-2 border-red-600 bg-red-50/70 shadow-sm ring-2 ring-red-500/30 hover:border-red-700 hover:bg-red-50/90 hover:shadow-md'
+                    ? 'border border-rose-300 dark:border-rose-800/80 bg-rose-50/40 dark:bg-rose-950/30 hover:border-rose-400 dark:hover:border-rose-700 hover:shadow-xs'
                     : isCurrentMonth
-                    ? 'border border-slate-200/90 bg-white hover:border-slate-400 hover:shadow-xs'
-                    : 'border border-slate-100 bg-slate-50/60 text-slate-400'
+                    ? 'border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-400 dark:hover:border-slate-700 hover:shadow-xs'
+                    : 'border border-slate-100 dark:border-slate-800/40 bg-slate-50/60 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600'
                 } ${
                   isToday && !isDragOver
-                    ? 'ring-2 ring-emerald-600 border-emerald-500 bg-emerald-50/20'
+                    ? 'ring-2 ring-emerald-600 dark:ring-emerald-400 border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30'
                     : ''
                 }`}
               >
-                {/* Top Accent Bar: Gradient Vivid Red for National Holidays */}
-                {hasHoliday ? (
-                  <div className="h-1.5 w-full absolute top-0 inset-x-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 rounded-t-xl" />
-                ) : isCurrentMonth && primaryStyle ? (
+                {/* Top Accent Bar */}
+                {isCurrentMonth && primaryStyle ? (
                   <div className={`h-1 w-full absolute top-0 inset-x-0 ${primaryStyle.accentBar}`} />
                 ) : null}
 
@@ -333,46 +331,37 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     className={`text-xs tabular-nums leading-none ${
                       isToday
                         ? 'w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold shadow-xs'
-                        : hasHoliday
-                        ? 'text-red-700 font-black'
                         : isSunday
-                        ? 'text-red-600 font-bold'
+                        ? 'text-red-600 dark:text-red-400 font-bold'
                         : isCurrentMonth
-                        ? 'text-slate-800 font-semibold'
-                        : 'text-slate-400 font-normal'
+                        ? 'text-slate-800 dark:text-slate-200 font-semibold'
+                        : 'text-slate-400 dark:text-slate-600 font-normal'
                     }`}
                   >
                     {dayNumber}
                   </span>
 
-                  {/* Holiday Badge or Quick Add Button */}
-                  {hasHoliday ? (
-                    <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white bg-red-600 border border-red-700 px-1.5 py-0.5 rounded-full shadow-2xs">
-                      <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
-                      <span className="truncate max-w-[70px]">Libur Nas</span>
-                    </span>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      {isToday && (
-                        <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
-                          Hari Ini
-                        </span>
-                      )}
-                      {isCurrentMonth && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectDate(dateStr, 'holiday');
-                          }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-[9.5px] font-bold text-red-700 hover:text-white bg-red-100/95 hover:bg-red-600 border border-red-300 px-1.5 py-0.5 rounded cursor-pointer pointer-events-auto shrink-0 shadow-2xs"
-                          title="Tandai tanggal ini sebagai Hari Libur Nasional (border merah)"
-                        >
-                          + Libur
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  {/* Quick Add Button */}
+                  <div className="flex items-center gap-1">
+                    {isToday && (
+                      <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded shrink-0">
+                        Hari Ini
+                      </span>
+                    )}
+                    {isCurrentMonth && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectDate(dateStr);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-[9.5px] font-bold text-slate-700 dark:text-slate-200 hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-[#143c14] border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 rounded cursor-pointer pointer-events-auto shrink-0 shadow-2xs"
+                        title="Tambah Agenda Baru pada tanggal ini"
+                      >
+                        + Tambah
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Drag Over Hint */}
@@ -387,13 +376,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                 {/* DESKTOP ONLY: Full Solid Color Blocks with Dynamic Distinct High-Contrast Colors */}
                 <div className="flex space-y-1 mt-1.5 flex-1 flex-col justify-start min-w-0 max-w-full w-full">
                   {dayEvents.map((event) => {
-                    const isHolidayEvent = event.category === 'holiday' || event.isOfficialHoliday;
-                    const style = isHolidayEvent
-                      ? {
-                          bgSolid: 'bg-[#dc2626] text-white font-black hover:bg-[#b91c1c] ring-1 ring-rose-700',
-                          badgeBg: 'bg-rose-100 text-rose-950 border-rose-300',
-                        }
-                      : getDynamicEventStyle(event, monthEvents);
+                    const style = getDynamicEventStyle(event, monthEvents);
                     const cat = CATEGORIES_CONFIG[event.category] || CATEGORIES_CONFIG.academic;
                     const isBeingDragged = draggingEventId === event.id;
                     const isMultiDay = event.startDate !== event.endDate;
@@ -401,8 +384,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     const isEnd = event.endDate === dateStr;
                     const isSearchMatch = Boolean(
                       searchQuery?.trim() &&
-                      (event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       event.description.toLowerCase().includes(searchQuery.toLowerCase()))
+                      ((event.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       (event.description || '').toLowerCase().includes(searchQuery.toLowerCase()))
                     );
                     const timeRangeStr = event.startTime && event.endTime
                       ? `${event.startTime} – ${event.endTime} WITA`
@@ -436,8 +419,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         } ${isBeingDragged ? 'opacity-40 scale-95 ring-2 ring-white' : 'hover:brightness-110 hover:shadow'}`}
                       >
                         <GripVertical className="w-2.5 h-2.5 opacity-60 group-hover/pill:opacity-100 shrink-0 -ml-0.5" />
-                        {isHolidayEvent && (
-                          <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
+                        {event.isRecurring && (
+                          <Repeat className="w-2.5 h-2.5 opacity-90 shrink-0" />
                         )}
                         <HighlightText
                           text={event.title}
@@ -507,17 +490,17 @@ export const MonthView: React.FC<MonthViewProps> = ({
           ========================================================================= */}
       <div className="block sm:hidden w-full max-w-full space-y-3">
         {/* Mobile Filter Toggle Header */}
-        <div className="flex items-center justify-between gap-2 p-2 bg-slate-100/90 rounded-xl border border-slate-200/80">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-            <List className="w-4 h-4 text-[#143c14]" />
+        <div className="flex items-center justify-between gap-2 p-2 bg-slate-100/90 dark:bg-slate-800/90 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+            <List className="w-4 h-4 text-[#143c14] dark:text-emerald-400" />
             <span>Daftar Harian Bulan Ini</span>
           </div>
           <button
             onClick={() => setMobileOnlyWithEvents(!mobileOnlyWithEvents)}
             className={`px-2 py-1 text-[11px] font-bold rounded-lg transition-colors cursor-pointer border flex items-center gap-1 ${
               mobileOnlyWithEvents
-                ? 'bg-[#143c14] text-white border-[#143c14]'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-[#143c14] dark:bg-emerald-800 text-white border-[#143c14] dark:border-emerald-700'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             <Filter className="w-3 h-3" />
@@ -540,16 +523,16 @@ export const MonthView: React.FC<MonthViewProps> = ({
                 key={dateStr}
                 className={`p-3 rounded-2xl border transition-all w-full ${
                   isToday
-                    ? 'bg-emerald-50/40 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
+                    ? 'bg-emerald-50/40 dark:bg-emerald-950/30 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
                     : hasHoliday
-                    ? 'bg-red-50/70 border-2 border-red-600 ring-2 ring-red-400/30 shadow-sm'
+                    ? 'bg-rose-50/30 dark:bg-rose-950/20 border border-rose-300 dark:border-rose-800 shadow-2xs'
                     : hasEvents
-                    ? 'bg-white border-slate-200 shadow-2xs'
-                    : 'bg-slate-50/80 border-slate-200/60'
+                    ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xs'
+                    : 'bg-slate-50/80 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800/60'
                 }`}
               >
                 {/* Day Header Row */}
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs shadow-2xs tabular-nums ${
@@ -557,48 +540,32 @@ export const MonthView: React.FC<MonthViewProps> = ({
                           ? 'bg-[#143c14] text-[#ffcc00] ring-1 ring-emerald-700'
                           : hasHoliday || isSunday
                           ? 'bg-red-600 text-white'
-                          : 'bg-slate-200 text-slate-800'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200'
                       }`}
                     >
                       {dayNumber}
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={`text-xs font-bold ${hasHoliday || isSunday ? 'text-red-700' : 'text-slate-900'}`}>
+                        <span className={`text-xs font-bold ${isSunday ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
                           {dayName}
                         </span>
-                        {hasHoliday && (
-                          <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white bg-red-600 border border-red-700 px-1.5 py-0.2 rounded-full shadow-2xs">
-                            <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
-                            Libur Nasional
-                          </span>
-                        )}
                         {isToday && (
-                          <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded">
+                          <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded">
                             Hari Ini
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">
                         {formatIndonesianDate(dateStr)}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    {!hasHoliday && (
-                      <button
-                        onClick={() => onSelectDate(dateStr, 'holiday')}
-                        className="inline-flex items-center gap-1 text-[10.5px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-lg border border-rose-200 transition-colors"
-                        title="Tandai Libur Nasional"
-                      >
-                        <Flag className="w-3 h-3 fill-rose-600 text-rose-600" />
-                        <span>Libur</span>
-                      </button>
-                    )}
                     <button
                       onClick={() => onSelectDate(dateStr)}
-                      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#143c14] bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg border border-emerald-200 transition-colors"
+                      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#143c14] dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 px-2 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Input</span>
@@ -610,14 +577,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                 {hasEvents ? (
                   <div className="space-y-2 mt-2.5">
                     {dayEvents.map((evt) => {
-                      const isHolidayEvt = evt.category === 'holiday' || evt.isOfficialHoliday;
-                      const style = isHolidayEvt
-                        ? {
-                            borderColor: 'border-rose-400',
-                            bgSolid: 'bg-[#dc2626]',
-                            badgeBg: 'bg-rose-100 text-rose-950 border-rose-300',
-                          }
-                        : getDynamicEventStyle(evt, monthEvents);
+                      const style = getDynamicEventStyle(evt, monthEvents);
                       const cat = CATEGORIES_CONFIG[evt.category] || CATEGORIES_CONFIG.academic;
                       const timeRangeStr = evt.startTime && evt.endTime
                         ? `${evt.startTime} – ${evt.endTime} WITA`
@@ -627,17 +587,12 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         <div
                           key={evt.id}
                           onClick={() => onSelectEvent(evt)}
-                          className={`p-2.5 rounded-xl border ${
-                            isHolidayEvt ? 'border-2 border-rose-500 bg-rose-50/50' : style.borderColor
-                          } bg-white shadow-2xs text-left cursor-pointer active:scale-99 transition-all space-y-1.5`}
+                          className={`p-2.5 rounded-xl border ${style.borderColor} bg-white shadow-2xs text-left cursor-pointer active:scale-99 transition-all space-y-1.5`}
                         >
                           <div className="flex items-center justify-between gap-1 flex-wrap">
                             <span
-                              className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border inline-flex items-center gap-1 ${
-                                isHolidayEvt ? 'bg-rose-600 text-white border-rose-700' : style.badgeBg
-                              }`}
+                              className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border inline-flex items-center gap-1 ${style.badgeBg}`}
                             >
-                              {isHolidayEvt ? <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" /> : null}
                               {cat.label}
                             </span>
                             <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">

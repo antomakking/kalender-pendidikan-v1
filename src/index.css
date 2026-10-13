@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html,
   body,
@@ -9,6 +11,11 @@
     width: 100%;
     margin: 0;
     padding: 0;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    background-color: #020617;
   }
 
   body {

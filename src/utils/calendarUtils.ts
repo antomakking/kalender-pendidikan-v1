@@ -1,10 +1,18 @@
 import { AcademicEvent, CategoryMeta, ClassLevel, EventCategory, SemesterFilter } from '../types.ts';
 
+export const PRIMARY_CATEGORIES: EventCategory[] = [
+  'kbm',
+  'assessment',
+  'school',
+  'student',
+  'holiday',
+];
+
 export const CATEGORIES_CONFIG: Record<EventCategory, CategoryMeta> = {
-  academic: {
-    id: 'academic',
-    label: 'KBM, Pembelajaran & Asesmen',
-    shortLabel: 'KBM & Ujian',
+  kbm: {
+    id: 'kbm',
+    label: 'Kegiatan Belajar Mengajar (KBM)',
+    shortLabel: 'KBM',
     bgLight: 'bg-amber-50/80',
     bgBadge: 'bg-amber-100 text-amber-950 border border-amber-300 font-bold',
     bgSolid: 'bg-[#ffcc00] text-slate-950 font-bold shadow-xs hover:bg-[#eab308]',
@@ -16,9 +24,54 @@ export const CATEGORIES_CONFIG: Record<EventCategory, CategoryMeta> = {
     dotColor: 'bg-[#ffcc00]',
     printBg: '#ffcc00',
   },
+  assessment: {
+    id: 'assessment',
+    label: 'Assesmen',
+    shortLabel: 'Assesmen',
+    bgLight: 'bg-purple-50/80',
+    bgBadge: 'bg-purple-100 text-purple-950 border border-purple-300 font-bold',
+    bgSolid: 'bg-purple-700 text-white font-bold shadow-xs hover:bg-purple-800',
+    borderSolid: 'border-purple-800',
+    cellTint: 'bg-purple-50/60 border-purple-200',
+    topBar: 'bg-purple-700',
+    textColor: 'text-purple-900',
+    borderColor: 'border-purple-300',
+    dotColor: 'bg-purple-700',
+    printBg: '#7e22ce',
+  },
+  school: {
+    id: 'school',
+    label: 'Kegiatan Sekolah',
+    shortLabel: 'Kegiatan Sekolah',
+    bgLight: 'bg-emerald-50/80',
+    bgBadge: 'bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold',
+    bgSolid: 'bg-[#15803d] text-white font-bold shadow-xs hover:bg-[#166534]',
+    borderSolid: 'border-emerald-700',
+    cellTint: 'bg-emerald-50/60 border-emerald-200',
+    topBar: 'bg-[#15803d]',
+    textColor: 'text-emerald-800',
+    borderColor: 'border-emerald-300',
+    dotColor: 'bg-[#15803d]',
+    printBg: '#15803d',
+  },
+  student: {
+    id: 'student',
+    label: 'Kegiatan Siswa',
+    shortLabel: 'Kegiatan Siswa',
+    bgLight: 'bg-sky-50/80',
+    bgBadge: 'bg-sky-100 text-sky-900 border border-sky-300 font-bold',
+    bgSolid: 'bg-[#0284c7] text-white font-bold shadow-xs hover:bg-[#0369a1]',
+    borderSolid: 'border-sky-700',
+    cellTint: 'bg-sky-50/60 border-sky-200',
+    topBar: 'bg-[#0284c7]',
+    textColor: 'text-sky-800',
+    borderColor: 'border-sky-300',
+    dotColor: 'bg-[#0284c7]',
+    printBg: '#0284c7',
+  },
   holiday: {
     id: 'holiday',
-    label: 'Libur Nasional & Cuti Bersama',
+    label: 'Libur',
     shortLabel: 'Libur',
     bgLight: 'bg-rose-50/80',
     bgBadge: 'bg-rose-100 text-rose-800 border border-rose-300 font-bold',
@@ -31,25 +84,25 @@ export const CATEGORIES_CONFIG: Record<EventCategory, CategoryMeta> = {
     dotColor: 'bg-[#dc2626]',
     printBg: '#dc2626',
   },
-  student: {
-    id: 'student',
-    label: 'Kesiswaan, PKL & Remedial',
-    shortLabel: 'Kesiswaan & PKL',
-    bgLight: 'bg-sky-50/80',
-    bgBadge: 'bg-sky-100 text-sky-900 border border-sky-300 font-bold',
-    bgSolid: 'bg-[#0284c7] text-white font-bold shadow-xs hover:bg-[#0369a1]',
-    borderSolid: 'border-sky-700',
-    cellTint: 'bg-sky-50/60 border-sky-200',
-    topBar: 'bg-[#0284c7]',
-    textColor: 'text-sky-800',
-    borderColor: 'border-sky-300',
-    dotColor: 'bg-[#0284c7]',
-    printBg: '#0284c7',
+  academic: {
+    id: 'kbm',
+    label: 'Kegiatan Belajar Mengajar (KBM)',
+    shortLabel: 'KBM',
+    bgLight: 'bg-amber-50/80',
+    bgBadge: 'bg-amber-100 text-amber-950 border border-amber-300 font-bold',
+    bgSolid: 'bg-[#ffcc00] text-slate-950 font-bold shadow-xs hover:bg-[#eab308]',
+    borderSolid: 'border-amber-500',
+    cellTint: 'bg-amber-50/60 border-amber-200',
+    topBar: 'bg-[#ffcc00]',
+    textColor: 'text-amber-950',
+    borderColor: 'border-amber-300',
+    dotColor: 'bg-[#ffcc00]',
+    printBg: '#ffcc00',
   },
   teacher: {
-    id: 'teacher',
-    label: 'Penilaian Semester, Rapor & Guru',
-    shortLabel: 'Penilaian & Rapor',
+    id: 'school',
+    label: 'Kegiatan Sekolah',
+    shortLabel: 'Kegiatan Sekolah',
     bgLight: 'bg-emerald-50/80',
     bgBadge: 'bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold',
     bgSolid: 'bg-[#15803d] text-white font-bold shadow-xs hover:bg-[#166534]',
@@ -81,7 +134,7 @@ export function getEventClasses(event: AcademicEvent): ClassLevel[] {
   }
 
   if (classes.length > 0) {
-    const order: ClassLevel[] = ['X', 'XI', 'XII'];
+    const order: ClassLevel[] = ['X', 'XII', 'XII'];
     return order.filter((c) => classes.includes(c));
   }
 
@@ -92,7 +145,9 @@ export function getEventCategoryMeta(eventOrCategory: AcademicEvent | EventCateg
   const categoryId = (typeof eventOrCategory === 'object' && eventOrCategory !== null)
     ? eventOrCategory.category
     : (eventOrCategory as EventCategory);
-  return CATEGORIES_CONFIG[categoryId] || CATEGORIES_CONFIG.academic;
+  if (categoryId === 'academic') return CATEGORIES_CONFIG.kbm;
+  if (categoryId === 'teacher') return CATEGORIES_CONFIG.school;
+  return CATEGORIES_CONFIG[categoryId] || CATEGORIES_CONFIG.kbm;
 }
 
 export const MONTH_NAMES_ID = [
@@ -173,12 +228,15 @@ export function isDateInRange(
     // Multi-day academic and teacher events (exams, KBM, assessments) do not occur on weekends (Saturday & Sunday)
     if (
       startDateStr !== endDateStr &&
-      (event.category === 'academic' ||
+      (event.category === 'kbm' ||
+        event.category === 'assessment' ||
+        event.category === 'school' ||
+        event.category === 'academic' ||
         event.category === 'teacher' ||
         event.excludeWeekends ||
-        event.title.toLowerCase().includes('ujian') ||
-        event.title.toLowerCase().includes('sumatif') ||
-        event.title.toLowerCase().includes('kompetensi')) &&
+        (event.title || '').toLowerCase().includes('ujian') ||
+        (event.title || '').toLowerCase().includes('sumatif') ||
+        (event.title || '').toLowerCase().includes('kompetensi')) &&
       event.category !== 'holiday'
     ) {
       const [y, m, d] = targetDateStr.split('-').map(Number);
@@ -192,8 +250,48 @@ export function isDateInRange(
   return true;
 }
 
+export function deduplicateEvents(eventsList: AcademicEvent[]): AcademicEvent[] {
+  if (!Array.isArray(eventsList)) return [];
+
+  const seenIds = new Set<string>();
+  const seenKeys = new Set<string>();
+  const result: AcademicEvent[] = [];
+
+  for (const event of eventsList) {
+    if (!event || typeof event !== 'object' || !event.title) continue;
+
+    // Check ID uniqueness
+    if (event.id && seenIds.has(event.id)) {
+      continue;
+    }
+
+    // Normalize title, dates, times, and year for content deduplication
+    const normTitle = (event.title || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const normStart = event.startDate || '';
+    const normEnd = event.endDate || normStart;
+    const normStartTime = event.startTime || '';
+    const normEndTime = event.endTime || '';
+    const normYear = event.academicYear || '';
+
+    const contentKey = `${normTitle}|${normStart}|${normEnd}|${normStartTime}|${normEndTime}|${normYear}`;
+
+    if (seenKeys.has(contentKey)) {
+      continue;
+    }
+
+    if (event.id) {
+      seenIds.add(event.id);
+    }
+    seenKeys.add(contentKey);
+    result.push(event);
+  }
+
+  return result;
+}
+
 export function getEventsForDate(events: AcademicEvent[], dateStr: string): AcademicEvent[] {
-  return events.filter(event => isDateInRange(dateStr, event.startDate, event.endDate, event));
+  const matched = events.filter(event => isDateInRange(dateStr, event.startDate, event.endDate, event));
+  return deduplicateEvents(matched);
 }
 
 export function getDaysDifference(targetDateStr: string, baseDateStr: string = '2026-09-28'): number {
@@ -534,7 +632,9 @@ export function calculateAcademicStats(
   const selectedMonthName = MONTH_NAMES_ID[targetMonth] || 'Bulan Dipilih';
 
   // 3. Real Academic / Learning Events
-  const academicEventsCount = filteredEvents.filter((e) => e.category === 'academic').length;
+  const academicEventsCount = filteredEvents.filter(
+    (e) => e.category === 'kbm' || e.category === 'assessment' || e.category === 'academic'
+  ).length;
   const totalEventsCount = filteredEvents.length;
 
   // 4. Real 14 Days Ahead Events (within the selected Academic Year)

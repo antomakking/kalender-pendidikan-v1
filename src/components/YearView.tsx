@@ -8,7 +8,6 @@ import {
   MONTH_NAMES_ID,
 } from '../utils/calendarUtils.ts';
 import { HighlightText } from './HighlightText.tsx';
-import { IndonesianFlagPin } from './IndonesianFlagPin.tsx';
 
 interface YearViewProps {
   academicYear: string;
@@ -146,11 +145,11 @@ export const YearView: React.FC<YearViewProps> = ({
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <div className="pb-3 border-b border-slate-100">
-        <h3 className="font-bold text-slate-900 text-lg">
+      <div className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg">
           Matriks Kalender Tahunan TA {academicYear}
         </h3>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Ringkasan 12 bulan kalender pendidikan. Klik nama bulan untuk beralih ke tampilan bulanan detail.
         </p>
       </div>
@@ -173,11 +172,11 @@ export const YearView: React.FC<YearViewProps> = ({
           return (
             <div
               key={`${year}-${month}`}
-              className="bg-white border-2 border-slate-200/90 rounded-xl p-3 shadow-xs hover:border-[#143c14]/50 transition-colors flex flex-col justify-start"
+              className="bg-white dark:bg-slate-900 border-2 border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs hover:border-[#143c14]/50 dark:hover:border-emerald-500/50 transition-colors flex flex-col justify-start"
             >
               <div>
                 {/* Month Card Header */}
-                <div className="bg-[#143c14] text-white py-1.5 px-3 rounded-lg flex items-center justify-between shadow-2xs mb-2">
+                <div className="bg-[#143c14] dark:bg-emerald-950 text-white py-1.5 px-3 rounded-lg flex items-center justify-between shadow-2xs mb-2">
                   <div className="flex items-center gap-1.5">
                     <span className="font-black text-xs tracking-wider uppercase text-white">
                       {label}
@@ -197,12 +196,12 @@ export const YearView: React.FC<YearViewProps> = ({
                 {/* Day Letters: Red for Ahad, Green for Senin-Sabtu */}
                 <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black mb-1.5">
                   <span className="bg-[#dc2626] text-white py-0.5 rounded-xs">A</span>
-                  <span className="bg-[#143c14] text-white py-0.5 rounded-xs">S</span>
-                  <span className="bg-[#143c14] text-white py-0.5 rounded-xs">S</span>
-                  <span className="bg-[#143c14] text-white py-0.5 rounded-xs">R</span>
-                  <span className="bg-[#143c14] text-white py-0.5 rounded-xs">K</span>
-                  <span className="bg-[#143c14] text-white py-0.5 rounded-xs">J</span>
-                  <span className="bg-[#143c14] text-white py-0.5 rounded-xs">S</span>
+                  <span className="bg-[#143c14] dark:bg-emerald-900 text-white py-0.5 rounded-xs">S</span>
+                  <span className="bg-[#143c14] dark:bg-emerald-900 text-white py-0.5 rounded-xs">S</span>
+                  <span className="bg-[#143c14] dark:bg-emerald-900 text-white py-0.5 rounded-xs">R</span>
+                  <span className="bg-[#143c14] dark:bg-emerald-900 text-white py-0.5 rounded-xs">K</span>
+                  <span className="bg-[#143c14] dark:bg-emerald-900 text-white py-0.5 rounded-xs">J</span>
+                  <span className="bg-[#143c14] dark:bg-emerald-900 text-white py-0.5 rounded-xs">S</span>
                 </div>
 
                 {/* Mini Day Cells */}
@@ -240,27 +239,20 @@ export const YearView: React.FC<YearViewProps> = ({
                         }}
                         title={
                           dayEvents.length > 0
-                            ? `${hasHoliday ? '🚩 [LIBUR NASIONAL] ' : ''}${dayEvents.map((e) => e.title).join(' • ')}`
+                            ? dayEvents.map((e) => e.title).join(' • ')
                             : dateStr
                         }
                         className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer transition-transform relative ${
                           isToday
-                            ? 'bg-[#143c14] text-white font-black ring-2 ring-[#ffcc00]'
-                            : hasHoliday
-                            ? 'bg-red-600 text-white font-black ring-2 ring-red-500 shadow-sm scale-[0.98] border border-red-700'
+                            ? 'bg-[#143c14] dark:bg-emerald-700 text-white font-black ring-2 ring-[#ffcc00]'
                             : eventStyle
                             ? `${eventStyle.bgSolid} font-bold scale-[0.98] shadow-2xs`
                             : isSunday
-                            ? 'text-red-600 font-bold hover:bg-rose-50'
-                            : 'text-slate-700 hover:bg-slate-100 font-medium'
+                            ? 'text-red-600 dark:text-rose-400 font-bold hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'
                         }`}
                       >
                         <span className="leading-tight">{day}</span>
-                        {hasHoliday && (
-                          <div className="mt-0.5 flex items-center justify-center" title="Libur Nasional (Merah Putih)">
-                            <IndonesianFlagPin className="w-3.5 h-2.5 drop-shadow-xs" />
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -271,15 +263,14 @@ export const YearView: React.FC<YearViewProps> = ({
                   ))}
                 </div>
 
-                {/* Official Holiday Footnotes in Red */}
-                {monthEvents.filter((e) => e.category === 'holiday' || e.isOfficialHoliday).length > 0 && (
-                  <div className="mt-2 pt-1.5 border-t border-rose-100 text-[9.5px] text-red-600 font-bold leading-tight space-y-0.5">
+                {/* Holiday Footnotes */}
+                {monthEvents.filter((e) => e.category === 'holiday').length > 0 && (
+                  <div className="mt-2 pt-1.5 border-t border-rose-100 dark:border-rose-900/50 text-[9.5px] text-red-600 dark:text-rose-400 font-bold leading-tight space-y-0.5">
                     {monthEvents
-                      .filter((e) => e.category === 'holiday' || e.isOfficialHoliday)
+                      .filter((e) => e.category === 'holiday')
                       .slice(0, 3)
                       .map((h) => (
-                        <div key={h.id} className="truncate flex items-center gap-1.5" title={h.title}>
-                          <IndonesianFlagPin className="w-3.5 h-2.5 shrink-0" />
+                        <div key={h.id} className="truncate flex items-center gap-1" title={h.title}>
                           <span className="truncate">{parseInt(h.startDate.slice(8), 10)} {MONTH_NAMES_ID[month]}: {h.title}</span>
                         </div>
                       ))}
@@ -288,18 +279,18 @@ export const YearView: React.FC<YearViewProps> = ({
               </div>
 
               {/* Month Highlights / Agenda Preview with Distinct Colors Matching the Mini Grid */}
-              <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] flex-1 flex flex-col justify-start">
+              <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] flex-1 flex flex-col justify-start">
                 {monthEvents.length > 0 ? (
                   <div className="space-y-1">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
                       Agenda ({monthEvents.length})
                     </span>
                     {monthEvents.map((evt) => {
                       const eventStyle = getEventColorInMonth(evt, monthEvents);
                       const isMatch = Boolean(
                         searchQuery?.trim() &&
-                        (evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         evt.description.toLowerCase().includes(searchQuery.toLowerCase()))
+                        ((evt.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (evt.description || '').toLowerCase().includes(searchQuery.toLowerCase()))
                       );
 
                       // Format concise date badge (e.g. 1-10 Okt)
@@ -325,7 +316,7 @@ export const YearView: React.FC<YearViewProps> = ({
                     })}
                   </div>
                 ) : (
-                  <span className="text-slate-400 text-[10px] italic">
+                  <span className="text-slate-400 dark:text-slate-500 text-[10px] italic">
                     Belum ada agenda terjadwal
                   </span>
                 )}
@@ -336,7 +327,7 @@ export const YearView: React.FC<YearViewProps> = ({
       </div>
 
       {/* Bottom Institutional Disclaimer Banner */}
-      <div className="bg-[#143c14] text-white rounded-xl p-3 text-center text-xs font-bold border-t-2 border-[#ffcc00] shadow-xs">
+      <div className="bg-[#143c14] dark:bg-emerald-950 text-white rounded-xl p-3 text-center text-xs font-bold border-t-2 border-[#ffcc00] shadow-xs">
         <span className="text-[#ffcc00] tracking-wider uppercase mr-1">PERHATIAN:</span>
         Jadwal dapat berubah mengikuti informasi dari Pemerintah dan Yayasan. Seluruh perubahan jadwal akan diumumkan melalui surat edaran resmi.
       </div>

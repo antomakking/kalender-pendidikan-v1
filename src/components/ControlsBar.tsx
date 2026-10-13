@@ -20,7 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { CalendarView, ClassFilter, EventCategory, SemesterFilter } from '../types.ts';
-import { CATEGORIES_CONFIG, MONTH_NAMES_ID } from '../utils/calendarUtils.ts';
+import { CATEGORIES_CONFIG, MONTH_NAMES_ID, PRIMARY_CATEGORIES } from '../utils/calendarUtils.ts';
 
 const RECENT_SEARCHES_KEY = 'smk_recent_searches_v1';
 const DEFAULT_RECENT_SEARCHES = ['Ujian Tasmi\'', 'Sumatif Akhir', 'PKL', 'Libur', 'Rapor'];
@@ -164,11 +164,11 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
   };
 
   return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3.5 sm:space-y-4" id="kalender">
+    <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3.5 sm:space-y-4 transition-colors" id="kalender">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
         
         {/* View Switcher Tabs (horizontally scrollable on small mobile screens) */}
-        <div className="flex overflow-x-auto max-w-full p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start no-scrollbar relative">
+        <div className="flex overflow-x-auto max-w-full p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700/80 self-start no-scrollbar relative">
           {(
             [
               { id: 'year' as const, label: 'Tahunan (12 Bulan)' },
@@ -183,13 +183,13 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
                 key={tab.id}
                 onClick={() => onChangeView(tab.id)}
                 className={`relative px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  isActive ? 'text-white' : 'text-slate-600 hover:text-[#143c14]'
+                  isActive ? 'text-white' : 'text-slate-600 dark:text-slate-300 hover:text-[#143c14] dark:hover:text-emerald-400'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeViewTabPill"
-                    className="absolute inset-0 bg-[#143c14] rounded-lg shadow-xs"
+                    className="absolute inset-0 bg-[#143c14] dark:bg-emerald-800 rounded-lg shadow-xs"
                     transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                   />
                 )}
@@ -204,26 +204,26 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => onNavigateMonth(-1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors shrink-0"
               title="Periode Sebelumnya"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={onGoToToday}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors shrink-0"
+              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors shrink-0"
             >
               Hari Ini
             </button>
             <button
               onClick={() => onNavigateMonth(1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors shrink-0"
               title="Periode Berikutnya"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
 
-            <span className="font-bold text-slate-900 text-xs sm:text-base ml-1.5 truncate max-w-[140px] sm:max-w-none">
+            <span className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-base ml-1.5 truncate max-w-[140px] sm:max-w-none">
               {getPeriodLabel()}
             </span>
           </div>
@@ -233,10 +233,9 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             <select
               value={academicYear}
               onChange={(e) => onChangeAcademicYear(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               title="Pilih Tahun Ajaran"
             >
-              <option value="2025/2026">TA 2025/2026</option>
               <option value="2026/2027">TA 2026/2027</option>
               <option value="2027/2028">TA 2027/2028</option>
             </select>
@@ -244,7 +243,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             <select
               value={semester}
               onChange={(e) => onChangeSemester(e.target.value as SemesterFilter)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[115px] sm:max-w-none truncate"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[115px] sm:max-w-none truncate"
               title="Pilih Semester"
             >
               <option value="all">Semua Smt</option>
@@ -255,7 +254,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             <select
               value={classFilter}
               onChange={(e) => onChangeClassFilter(e.target.value as ClassFilter)}
-              className="text-xs bg-slate-50 border border-emerald-300/80 rounded-lg px-2 py-1.5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[125px] sm:max-w-none truncate"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-emerald-300/80 dark:border-emerald-600/80 rounded-lg px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[125px] sm:max-w-none truncate"
               title="Filter Tingkat Kelas"
             >
               <option value="all">🎓 Semua Kelas</option>
@@ -268,12 +267,12 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
       </div>
 
       {/* Quick Class Level Pills & Category Filter Bar */}
-      <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
+      <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
         {/* Class Filter Pills */}
         <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-0.5">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0">
-              <GraduationCap className="w-3.5 h-3.5 text-emerald-800" />
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0">
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" />
               Tingkat:
             </span>
             <button
@@ -281,8 +280,8 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
               onClick={() => onChangeClassFilter('all')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 classFilter === 'all'
-                  ? 'bg-slate-800 text-white shadow-xs'
-                  : 'text-slate-600 bg-slate-100 hover:bg-slate-200'
+                  ? 'bg-slate-800 dark:bg-emerald-800 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               Semua Kelas
@@ -293,7 +292,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 classFilter === 'X'
                   ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400/50'
-                  : 'text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                  : 'text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800'
               }`}
             >
               Kelas X {eventsCountByClass ? `(${eventsCountByClass.X})` : ''}
@@ -304,7 +303,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 classFilter === 'XI'
                   ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400/50'
-                  : 'text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                  : 'text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800'
               }`}
             >
               Kelas XI {eventsCountByClass ? `(${eventsCountByClass.XI})` : ''}
@@ -315,7 +314,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 classFilter === 'XII'
                   ? 'bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-400/50'
-                  : 'text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                  : 'text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800'
               }`}
             >
               Kelas XII {eventsCountByClass ? `(${eventsCountByClass.XII})` : ''}
@@ -347,7 +346,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
               onChange={(e) => onChangeSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Cari agenda, ujian, P5, libur, peserta..."
-              className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#143c14] focus:bg-white transition-colors"
+              className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#143c14] focus:bg-white dark:focus:bg-slate-900 transition-colors"
             />
             {searchQuery && (
               <button
@@ -356,7 +355,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
                   onChangeSearchQuery('');
                   setIsSearchFocused(false);
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
                 title="Hapus pencarian"
               >
                 ✕
@@ -365,18 +364,18 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
 
             {/* Recent Searches Dropdown Menu */}
             {isSearchFocused && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 text-xs animate-in fade-in-50 slide-in-from-top-1 duration-150">
+              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 p-2 text-xs animate-in fade-in-50 slide-in-from-top-1 duration-150">
                 {/* Dropdown Header */}
-                <div className="flex items-center justify-between px-2 py-1 pb-1.5 border-b border-slate-100 text-[11px] text-slate-500 font-semibold">
-                  <span className="flex items-center gap-1.5 text-slate-700">
-                    <History className="w-3.5 h-3.5 text-emerald-700" />
+                <div className="flex items-center justify-between px-2 py-1 pb-1.5 border-b border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                  <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
+                    <History className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                     Pencarian Terakhir (Maks 5)
                   </span>
                   {recentSearches.length > 0 && (
                     <button
                       type="button"
                       onClick={clearAllRecentSearches}
-                      className="text-slate-400 hover:text-rose-600 transition-colors text-[10px] font-medium"
+                      className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-[10px] font-medium"
                       title="Bersihkan semua riwayat pencarian"
                     >
                       Hapus Riwayat
@@ -391,16 +390,16 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
                       <div
                         key={term}
                         onClick={() => handleSelectKeyword(term)}
-                        className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-slate-50 text-slate-800 cursor-pointer group transition-colors text-xs font-medium"
+                        className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 cursor-pointer group transition-colors text-xs font-medium"
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <Clock className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-700 transition-colors shrink-0" />
+                          <Clock className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors shrink-0" />
                           <span className="truncate">{term}</span>
                         </div>
                         <button
                           type="button"
                           onClick={(e) => removeRecentSearch(term, e)}
-                          className="text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 p-0.5 transition-all cursor-pointer rounded"
+                          className="text-slate-300 dark:text-slate-600 hover:text-rose-600 dark:hover:text-rose-400 opacity-0 group-hover:opacity-100 p-0.5 transition-all cursor-pointer rounded"
                           title={`Hapus "${term}" dari riwayat`}
                         >
                           <X className="w-3.5 h-3.5" />
@@ -415,8 +414,8 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
                 </div>
 
                 {/* Popular Search Shortcuts / Quick Tags */}
-                <div className="mt-1 pt-1.5 border-t border-slate-100">
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1.5">
+                <div className="mt-1 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 mb-1.5">
                     <Sparkles className="w-3 h-3 text-amber-500" />
                     Pintasan Populer
                   </div>
@@ -426,7 +425,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
                         key={tag}
                         type="button"
                         onClick={() => handleSelectKeyword(tag)}
-                        className="text-[10.5px] font-medium px-2 py-0.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-200 border border-slate-200/80 rounded-md text-slate-600 transition-colors cursor-pointer"
+                        className="text-[10.5px] font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 hover:text-emerald-900 dark:hover:text-emerald-200 border border-slate-200/80 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                       >
                         {tag}
                       </button>
@@ -441,10 +440,10 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             <button
               type="button"
               onClick={onOpenExportICal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#143c14] bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors shrink-0 shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#143c14] dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors shrink-0 shadow-2xs cursor-pointer"
               title="Ekspor ke Google Calendar & berkas iCal (.ics)"
             >
-              <Download className="w-3.5 h-3.5 text-[#143c14]" />
+              <Download className="w-3.5 h-3.5 text-[#143c14] dark:text-emerald-300" />
               <span className="hidden sm:inline">Ekspor .ics</span>
             </button>
           )}
@@ -456,56 +455,38 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             onClick={() => onChangeCategoryFilter('all')}
             className={`px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
               categoryFilter === 'all'
-                ? 'bg-[#143c14] text-white shadow-xs'
-                : 'text-slate-600 bg-slate-100 hover:bg-slate-200'
+                ? 'bg-[#143c14] dark:bg-emerald-800 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            Semua ({eventsCountByCategory.all})
+            Semua ({eventsCountByCategory.all || 0})
           </button>
 
-          <button
-            onClick={() => onChangeCategoryFilter('academic')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-colors border cursor-pointer ${
-              categoryFilter === 'academic'
-                ? 'bg-[#ffcc00] text-slate-950 border-amber-500 shadow-xs'
-                : 'text-amber-950 bg-amber-50 hover:bg-amber-100 border-amber-300'
-            }`}
-          >
-            KBM & Pembelajaran ({eventsCountByCategory.academic})
-          </button>
+          {PRIMARY_CATEGORIES.map((catKey) => {
+            const catMeta = CATEGORIES_CONFIG[catKey];
+            const isSelected =
+              categoryFilter === catKey ||
+              (catKey === 'kbm' && categoryFilter === 'academic') ||
+              (catKey === 'school' && categoryFilter === 'teacher');
+            const count =
+              (eventsCountByCategory[catKey] || 0) +
+              (catKey === 'kbm' ? eventsCountByCategory.academic || 0 : 0) +
+              (catKey === 'school' ? eventsCountByCategory.teacher || 0 : 0);
 
-          <button
-            onClick={() => onChangeCategoryFilter('holiday')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-colors border cursor-pointer ${
-              categoryFilter === 'holiday'
-                ? 'bg-[#dc2626] text-white border-red-700 shadow-xs'
-                : 'text-rose-800 bg-rose-50 hover:bg-rose-100 border-rose-300'
-            }`}
-          >
-            Hari Libur ({eventsCountByCategory.holiday})
-          </button>
-
-          <button
-            onClick={() => onChangeCategoryFilter('student')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-colors border cursor-pointer ${
-              categoryFilter === 'student'
-                ? 'bg-[#0284c7] text-white border-sky-700 shadow-xs'
-                : 'text-sky-800 bg-sky-50 hover:bg-sky-100 border-sky-300'
-            }`}
-          >
-            Kesiswaan & PKL ({eventsCountByCategory.student})
-          </button>
-
-          <button
-            onClick={() => onChangeCategoryFilter('teacher')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-colors border cursor-pointer ${
-              categoryFilter === 'teacher'
-                ? 'bg-[#15803d] text-white border-emerald-700 shadow-xs'
-                : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-300'
-            }`}
-          >
-            Penilaian & Rapor ({eventsCountByCategory.teacher})
-          </button>
+            return (
+              <button
+                key={catKey}
+                onClick={() => onChangeCategoryFilter(catKey)}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-colors border cursor-pointer ${
+                  isSelected
+                    ? `${catMeta.bgSolid} shadow-xs text-white`
+                    : `${catMeta.textColor} dark:text-slate-200 ${catMeta.bgLight} dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600`
+                }`}
+              >
+                {catMeta.label} ({count})
+              </button>
+            );
+          })}
         </div>
       </div>
       </div>

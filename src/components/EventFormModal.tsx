@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Calendar, Clock, Flag, Repeat, ShieldCheck, Sparkles, Users, X } from 'lucide-react';
+import { Calendar, Clock, Repeat, ShieldCheck, Sparkles, Users, X } from 'lucide-react';
 import { AcademicEvent, ClassLevel, EventCategory, RecurrenceFrequency } from '../types.ts';
 import { DateRangePicker } from './DateRangePicker.tsx';
 import {
@@ -35,12 +35,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [endDate, setEndDate] = useState(initialEvent?.endDate || defaultDate);
   const [startTime, setStartTime] = useState(initialEvent?.startTime || '07:30');
   const [endTime, setEndTime] = useState(initialEvent?.endTime || '15:00');
-  const [category, setCategory] = useState<EventCategory>(
-    initialEvent?.category || defaultCategory || 'academic'
-  );
-  const [isOfficialHoliday, setIsOfficialHoliday] = useState<boolean>(
-    initialEvent?.isOfficialHoliday ?? (defaultCategory === 'holiday' || initialEvent?.category === 'holiday')
-  );
+  const [category, setCategory] = useState<EventCategory>(() => {
+    const raw = initialEvent?.category || defaultCategory || 'kbm';
+    if (raw === 'academic') return 'kbm';
+    if (raw === 'teacher') return 'school';
+    return raw;
+  });
   const [targetClasses, setTargetClasses] = useState<ClassLevel[]>(() => {
     if (initialEvent) {
       return getEventClasses(initialEvent);
@@ -122,14 +122,13 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           endDate: dates.endDate < dates.startDate ? dates.startDate : dates.endDate,
           startTime: startTime || '08:00',
           endTime: endTime || '15:00',
-          category: isOfficialHoliday ? 'holiday' : category,
+          category,
           targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
           audience: audience.trim() || 'Semua Siswa',
           location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
           description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
           academicYear,
           semester,
-          isOfficialHoliday,
           isRecurring: true,
           recurrencePattern,
           recurrenceId: recId,
@@ -148,14 +147,13 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         endDate: endDate < startDate ? startDate : endDate,
         startTime: startTime || '08:00',
         endTime: endTime || '15:00',
-        category: isOfficialHoliday ? 'holiday' : category,
+        category,
         targetClasses: targetClasses.length > 0 ? targetClasses : ['X', 'XI', 'XII'],
         audience: audience.trim() || 'Semua Siswa',
         location: location.trim() || 'Kampus SMK IT Ibnul Qayyim',
         description: description.trim() || 'Agenda kegiatan sekolah terpadu.',
         academicYear,
         semester,
-        isOfficialHoliday,
         isRecurring: false,
       };
 
@@ -167,39 +165,39 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition-colors cursor-pointer"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer"
           title="Tutup"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#143c14] flex items-center justify-center font-bold">
-            <Calendar className="w-4 h-4 text-[#143c14]" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-[#143c14] dark:text-emerald-400 flex items-center justify-center font-bold">
+            <Calendar className="w-4 h-4 text-[#143c14] dark:text-emerald-400" />
           </div>
-          <h3 className="text-lg font-black text-slate-900">
+          <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
             {isEditing ? 'Edit Agenda Akademik' : 'Tambah Agenda Akademik Baru'}
           </h3>
         </div>
 
         {/* Security Authorized Badge */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-950 text-[11px] font-semibold my-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#143c14] shrink-0" />
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-950 dark:text-emerald-200 text-[11px] font-semibold my-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#143c14] dark:text-emerald-400 shrink-0" />
           <span>Otorisasi Terverifikasi: Mode Pengelola Kurikulum & Akademik</span>
         </div>
 
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
           Data akan disimpan ke penyimpanan lokal peramban (localStorage) dan langsung disinkronkan ke kalender.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Judul Kegiatan */}
           <div>
-            <label className="block font-bold text-slate-800 mb-1">
+            <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
               Nama / Judul Kegiatan *
             </label>
             <input
@@ -208,69 +206,8 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Contoh: Penilaian Akhir Semester (PAS) Ganjil Mandiri"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#143c14] text-xs sm:text-sm font-medium"
+              className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#143c14] text-xs sm:text-sm font-medium"
             />
-          </div>
-
-          {/* Quick Mark as National Holiday Card */}
-          <div
-            className={`p-3 rounded-xl border-2 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
-              isOfficialHoliday
-                ? 'border-rose-500 bg-rose-50/90 text-rose-950 ring-2 ring-rose-400/30 shadow-xs'
-                : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-rose-300'
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  isOfficialHoliday
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'bg-slate-200 text-slate-600'
-                }`}
-              >
-                <Flag className="w-4 h-4 fill-current" />
-              </div>
-              <div>
-                <div className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                  <span className={isOfficialHoliday ? 'text-rose-900' : 'text-slate-800'}>
-                    Status Hari Libur Nasional
-                  </span>
-                  {isOfficialHoliday && (
-                    <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.2 rounded-full font-bold">
-                      Aktif
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-500 leading-tight">
-                  Ditandai border warna merah menyala & ikon bendera resmi pada seluruh kalender.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (isOfficialHoliday) {
-                  setIsOfficialHoliday(false);
-                  if (category === 'holiday') {
-                    setCategory('academic');
-                  }
-                } else {
-                  setIsOfficialHoliday(true);
-                  setCategory('holiday');
-                  if (!title.trim() || title === 'Agenda Baru') {
-                    setTitle('Libur Nasional: ');
-                  }
-                }
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 self-start sm:self-auto ${
-                isOfficialHoliday
-                  ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-xs ring-1 ring-rose-700'
-                  : 'bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 shadow-2xs'
-              }`}
-            >
-              {isOfficialHoliday ? '✓ Ditandai Libur Nasional' : '🚩 Tandai Libur Nasional'}
-            </button>
           </div>
 
           {/* Visual Date Range Picker Component */}
@@ -633,12 +570,13 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as EventCategory)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#143c14]"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#143c14] font-medium text-xs sm:text-sm"
               >
-                <option value="academic">KBM, Pembelajaran & Asesmen</option>
-                <option value="holiday">Hari Libur Nasional & Yayasan</option>
-                <option value="student">Kesiswaan, P5 & Ekstrakurikuler</option>
-                <option value="teacher">Penilaian Semester, Rapor & Guru</option>
+                <option value="kbm">Kegiatan Belajar Mengajar (KBM)</option>
+                <option value="assessment">Assesmen</option>
+                <option value="school">Kegiatan Sekolah</option>
+                <option value="student">Kegiatan Siswa</option>
+                <option value="holiday">Libur</option>
               </select>
             </div>
 

@@ -27,19 +27,19 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 relative my-auto animate-in fade-in zoom-in-95">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative my-auto animate-in fade-in zoom-in-95">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold shadow-xs">
               <Bell className="w-5 h-5 text-slate-950 fill-slate-950" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 leading-tight">
                 Pengingat Notifikasi H-1
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Sistem otomatis pengingat browser 1 hari sebelum agenda penting dimulai.
               </p>
             </div>
@@ -47,7 +47,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
             title="Tutup"
           >
             <X className="w-5 h-5" />
@@ -55,7 +55,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         </div>
 
         {/* Permission Status Box */}
-        <div className="my-4 p-4 rounded-xl border space-y-3 bg-slate-50 border-slate-200">
+        <div className="my-4 p-4 rounded-xl border space-y-3 bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-700">Status Izin Browser:</span>

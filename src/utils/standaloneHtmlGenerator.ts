@@ -414,13 +414,13 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
       document.getElementById('statHoliday').innerHTML = allEvents.filter(function(e){ return e.category === 'holiday'; }).length + ' <span class="text-xs font-normal text-rose-700">Hari</span>';
       
       document.getElementById('count-all').innerText = allEvents.length;
-      document.getElementById('count-academic').innerText = allEvents.filter(function(e){ return e.category === 'academic'; }).length;
+      document.getElementById('count-academic').innerText = allEvents.filter(function(e){ return e.category === 'academic' || e.category === 'kbm' || e.category === 'assessment'; }).length;
       document.getElementById('count-holiday').innerText = allEvents.filter(function(e){ return e.category === 'holiday'; }).length;
       document.getElementById('count-student').innerText = allEvents.filter(function(e){ return e.category === 'student'; }).length;
-      document.getElementById('count-teacher').innerText = allEvents.filter(function(e){ return e.category === 'teacher'; }).length;
+      document.getElementById('count-teacher').innerText = allEvents.filter(function(e){ return e.category === 'teacher' || e.category === 'school'; }).length;
 
-      document.getElementById('badgeCountAcademic').innerText = allEvents.filter(function(e){ return e.category === 'academic'; }).length;
-      document.getElementById('badgeCountStudent').innerText = allEvents.filter(function(e){ return e.category === 'student'; }).length;
+      document.getElementById('badgeCountAcademic').innerText = allEvents.filter(function(e){ return e.category === 'academic' || e.category === 'kbm' || e.category === 'assessment'; }).length;
+      document.getElementById('badgeCountStudent').innerText = allEvents.filter(function(e){ return e.category === 'student' || e.category === 'school' || e.category === 'teacher'; }).length;
 
       document.getElementById('currentPeriodLabel').innerText = currentView === 'month' ? (MONTHS[currentMonth] + ' ' + currentYear) : 'Tahun Ajaran 2026/2027';
 
@@ -525,8 +525,8 @@ export function generateStandaloneHtml(events: AcademicEvent[]): string {
     }
 
     function renderSidebar() {
-      const acad = allEvents.filter(function(e){ return e.category === 'academic'; });
-      const stud = allEvents.filter(function(e){ return e.category === 'student'; });
+      const acad = allEvents.filter(function(e){ return e.category === 'academic' || e.category === 'kbm' || e.category === 'assessment'; });
+      const stud = allEvents.filter(function(e){ return e.category === 'student' || e.category === 'school' || e.category === 'teacher'; });
 
       let aHtml = '';
       acad.forEach(function(e) {
