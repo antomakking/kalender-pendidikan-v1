@@ -23,6 +23,7 @@ import { EmptyState } from './EmptyState.tsx';
 import { HighlightText } from './HighlightText.tsx';
 
 export interface EventDisplayStyle {
+  hexColor: string;
   bgSolid: string;
   textColor: string;
   ringColor: string;
@@ -34,6 +35,7 @@ export interface EventDisplayStyle {
 
 export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
   {
+    hexColor: '#ffcc00',
     bgSolid: 'bg-[#ffcc00] text-slate-950 font-bold hover:bg-[#e6b800]',
     textColor: 'text-slate-950',
     ringColor: 'ring-amber-400',
@@ -43,6 +45,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#ffcc00]',
   },
   {
+    hexColor: '#0284c7',
     bgSolid: 'bg-[#0284c7] text-white font-bold hover:bg-[#0369a1]',
     textColor: 'text-white',
     ringColor: 'ring-sky-400',
@@ -52,6 +55,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#0284c7]',
   },
   {
+    hexColor: '#15803d',
     bgSolid: 'bg-[#15803d] text-white font-bold hover:bg-[#166534]',
     textColor: 'text-white',
     ringColor: 'ring-emerald-400',
@@ -61,6 +65,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#15803d]',
   },
   {
+    hexColor: '#7c3aed',
     bgSolid: 'bg-[#7c3aed] text-white font-bold hover:bg-[#6d28d9]',
     textColor: 'text-white',
     ringColor: 'ring-purple-400',
@@ -70,6 +75,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#7c3aed]',
   },
   {
+    hexColor: '#ea580c',
     bgSolid: 'bg-[#ea580c] text-white font-bold hover:bg-[#c2410c]',
     textColor: 'text-white',
     ringColor: 'ring-orange-400',
@@ -79,6 +85,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#ea580c]',
   },
   {
+    hexColor: '#0d9488',
     bgSolid: 'bg-[#0d9488] text-white font-bold hover:bg-[#0f766e]',
     textColor: 'text-white',
     ringColor: 'ring-teal-400',
@@ -88,6 +95,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#0d9488]',
   },
   {
+    hexColor: '#db2777',
     bgSolid: 'bg-[#db2777] text-white font-bold hover:bg-[#be185d]',
     textColor: 'text-white',
     ringColor: 'ring-pink-400',
@@ -97,6 +105,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#db2777]',
   },
   {
+    hexColor: '#4f46e5',
     bgSolid: 'bg-[#4f46e5] text-white font-bold hover:bg-[#4338ca]',
     textColor: 'text-white',
     ringColor: 'ring-indigo-400',
@@ -106,6 +115,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#4f46e5]',
   },
   {
+    hexColor: '#b45309',
     bgSolid: 'bg-[#b45309] text-white font-bold hover:bg-[#92400e]',
     textColor: 'text-white',
     ringColor: 'ring-amber-600',
@@ -115,6 +125,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#b45309]',
   },
   {
+    hexColor: '#0891b2',
     bgSolid: 'bg-[#0891b2] text-white font-bold hover:bg-[#0e7490]',
     textColor: 'text-white',
     ringColor: 'ring-cyan-400',
@@ -124,6 +135,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#0891b2]',
   },
   {
+    hexColor: '#475569',
     bgSolid: 'bg-[#475569] text-white font-bold hover:bg-[#334155]',
     textColor: 'text-white',
     ringColor: 'ring-slate-400',
@@ -133,6 +145,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
     dotColor: 'bg-[#475569]',
   },
   {
+    hexColor: '#65a30d',
     bgSolid: 'bg-[#65a30d] text-white font-bold hover:bg-[#4d7c0f]',
     textColor: 'text-white',
     ringColor: 'ring-lime-400',
@@ -144,6 +157,7 @@ export const DISTINCT_EVENT_PALETTES: EventDisplayStyle[] = [
 ];
 
 export const HOLIDAY_EVENT_STYLE: EventDisplayStyle = {
+  hexColor: '#dc2626',
   bgSolid: 'bg-[#dc2626] text-white font-bold hover:bg-[#b91c1c]',
   textColor: 'text-white',
   ringColor: 'ring-rose-400',
@@ -166,6 +180,32 @@ export const getDynamicEventStyle = (
     return DISTINCT_EVENT_PALETTES[0];
   }
   return DISTINCT_EVENT_PALETTES[index % DISTINCT_EVENT_PALETTES.length];
+};
+
+export const getEventHexColor = (
+  event: AcademicEvent,
+  monthEvents: AcademicEvent[]
+): string => {
+  return getDynamicEventStyle(event, monthEvents).hexColor;
+};
+
+export const getMultiEventGradient = (
+  dayEvents: AcademicEvent[],
+  monthEvents: AcademicEvent[],
+  angle: string = '135deg'
+): string | undefined => {
+  if (!dayEvents || dayEvents.length === 0) return undefined;
+
+  const hexColors = Array.from(
+    new Set(dayEvents.map((evt) => getEventHexColor(evt, monthEvents)))
+  );
+
+  if (hexColors.length === 0) return undefined;
+  if (hexColors.length === 1) {
+    return hexColors[0];
+  }
+
+  return `linear-gradient(${angle}, ${hexColors.join(', ')})`;
 };
 
 interface MonthViewProps {
@@ -292,6 +332,9 @@ export const MonthView: React.FC<MonthViewProps> = ({
             const primaryEvent = dayEvents[0];
             const primaryStyle = primaryEvent ? getDynamicEventStyle(primaryEvent, monthEvents) : null;
             const hasHoliday = isCurrentMonth && dayEvents.some((e) => e.category === 'holiday' || e.isOfficialHoliday);
+            const isMultiEvent = isCurrentMonth && dayEvents.length > 1;
+            const multiGradient90 = isMultiEvent ? getMultiEventGradient(dayEvents, monthEvents, '90deg') : undefined;
+            const multiGradient135 = isMultiEvent ? getMultiEventGradient(dayEvents, monthEvents, '135deg') : undefined;
 
             return (
               <div
@@ -320,26 +363,43 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     : ''
                 }`}
               >
-                {/* Top Accent Bar */}
-                {isCurrentMonth && primaryStyle ? (
+                {/* Top Accent Bar (Gradasi Warna jika > 1 Agenda) */}
+                {isCurrentMonth && isMultiEvent && multiGradient90 ? (
+                  <div
+                    className="h-1.5 w-full absolute top-0 inset-x-0 rounded-t-xl z-10 shadow-2xs"
+                    style={{ background: multiGradient90 }}
+                    title={`${dayEvents.length} Agenda (Gradasi Warna Agenda):\n${dayEvents.map((e) => e.title).join('\n')}`}
+                  />
+                ) : isCurrentMonth && primaryStyle ? (
                   <div className={`h-1 w-full absolute top-0 inset-x-0 ${primaryStyle.accentBar}`} />
                 ) : null}
 
                 {/* Day Header */}
                 <div className="flex items-center justify-between pointer-events-none w-full min-w-0">
-                  <span
-                    className={`text-xs tabular-nums leading-none ${
-                      isToday
-                        ? 'w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold shadow-xs'
-                        : isSunday
-                        ? 'text-red-600 dark:text-red-400 font-bold'
-                        : isCurrentMonth
-                        ? 'text-slate-800 dark:text-slate-200 font-semibold'
-                        : 'text-slate-400 dark:text-slate-600 font-normal'
-                    }`}
-                  >
-                    {dayNumber}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`text-xs tabular-nums leading-none ${
+                        isToday
+                          ? 'w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold shadow-xs'
+                          : isSunday
+                          ? 'text-red-600 dark:text-red-400 font-bold'
+                          : isCurrentMonth
+                          ? 'text-slate-800 dark:text-slate-200 font-semibold'
+                          : 'text-slate-400 dark:text-slate-600 font-normal'
+                      }`}
+                    >
+                      {dayNumber}
+                    </span>
+                    {isMultiEvent && multiGradient135 && (
+                      <span
+                        className="inline-flex items-center text-[9px] font-black text-white px-1.5 py-0.5 rounded-full shadow-2xs tracking-tight"
+                        style={{ background: multiGradient135 }}
+                        title={`${dayEvents.length} Agenda (Gradasi Warna Agenda)`}
+                      >
+                        {dayEvents.length} Agenda
+                      </span>
+                    )}
+                  </div>
 
                   {/* Quick Add Button */}
                   <div className="flex items-center gap-1">
@@ -521,7 +581,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
             return (
               <div
                 key={dateStr}
-                className={`p-3 rounded-2xl border transition-all w-full ${
+                className={`p-3 rounded-2xl border transition-all w-full relative ${
                   isToday
                     ? 'bg-emerald-50/40 dark:bg-emerald-950/30 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
                     : hasHoliday
@@ -535,13 +595,20 @@ export const MonthView: React.FC<MonthViewProps> = ({
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs shadow-2xs tabular-nums ${
-                        isToday
+                      className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shadow-2xs tabular-nums ${
+                        dayEvents.length > 1
+                          ? 'text-white ring-1 ring-white/40'
+                          : isToday
                           ? 'bg-[#143c14] text-[#ffcc00] ring-1 ring-emerald-700'
                           : hasHoliday || isSunday
                           ? 'bg-red-600 text-white'
                           : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200'
                       }`}
+                      style={
+                        dayEvents.length > 1
+                          ? { background: getMultiEventGradient(dayEvents, monthEvents, '135deg') }
+                          : undefined
+                      }
                     >
                       {dayNumber}
                     </div>
@@ -553,6 +620,14 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         {isToday && (
                           <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded">
                             Hari Ini
+                          </span>
+                        )}
+                        {dayEvents.length > 1 && (
+                          <span
+                            className="text-[9px] font-black text-white uppercase px-1.5 py-0.2 rounded shadow-2xs"
+                            style={{ background: getMultiEventGradient(dayEvents, monthEvents, '135deg') }}
+                          >
+                            {dayEvents.length} Agenda
                           </span>
                         )}
                       </div>

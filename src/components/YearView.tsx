@@ -21,6 +21,7 @@ interface YearViewProps {
 }
 
 export interface EventColorStyle {
+  hexColor: string;
   bgSolid: string;
   dotColor: string;
   badgeBg: string;
@@ -30,6 +31,7 @@ export interface EventColorStyle {
 
 export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
   {
+    hexColor: '#ffcc00',
     bgSolid: 'bg-[#ffcc00] text-slate-950 font-bold hover:bg-[#e6b800]',
     dotColor: 'bg-[#ffcc00]',
     badgeBg: 'bg-amber-100 text-amber-950 border border-amber-300',
@@ -37,6 +39,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-amber-100 border-amber-300 text-slate-900',
   },
   {
+    hexColor: '#0284c7',
     bgSolid: 'bg-[#0284c7] text-white font-bold hover:bg-[#0369a1]',
     dotColor: 'bg-[#0284c7]',
     badgeBg: 'bg-sky-100 text-sky-900 border border-sky-300',
@@ -44,6 +47,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-sky-100 border-sky-300 text-sky-950',
   },
   {
+    hexColor: '#15803d',
     bgSolid: 'bg-[#15803d] text-white font-bold hover:bg-[#166534]',
     dotColor: 'bg-[#15803d]',
     badgeBg: 'bg-emerald-100 text-emerald-950 border border-emerald-300',
@@ -51,6 +55,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-emerald-100 border-emerald-300 text-emerald-950',
   },
   {
+    hexColor: '#7c3aed',
     bgSolid: 'bg-[#7c3aed] text-white font-bold hover:bg-[#6d28d9]',
     dotColor: 'bg-[#7c3aed]',
     badgeBg: 'bg-purple-100 text-purple-950 border border-purple-300',
@@ -58,6 +63,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-purple-100 border-purple-300 text-purple-950',
   },
   {
+    hexColor: '#ea580c',
     bgSolid: 'bg-[#ea580c] text-white font-bold hover:bg-[#c2410c]',
     dotColor: 'bg-[#ea580c]',
     badgeBg: 'bg-orange-100 text-orange-950 border border-orange-300',
@@ -65,6 +71,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-orange-100 border-orange-300 text-orange-950',
   },
   {
+    hexColor: '#0d9488',
     bgSolid: 'bg-[#0d9488] text-white font-bold hover:bg-[#0f766e]',
     dotColor: 'bg-[#0d9488]',
     badgeBg: 'bg-teal-100 text-teal-950 border border-teal-300',
@@ -72,6 +79,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-teal-100 border-teal-300 text-teal-950',
   },
   {
+    hexColor: '#db2777',
     bgSolid: 'bg-[#db2777] text-white font-bold hover:bg-[#be185d]',
     dotColor: 'bg-[#db2777]',
     badgeBg: 'bg-pink-100 text-pink-950 border border-pink-300',
@@ -79,6 +87,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
     cellTint: 'bg-pink-100 border-pink-300 text-pink-950',
   },
   {
+    hexColor: '#4f46e5',
     bgSolid: 'bg-[#4f46e5] text-white font-bold hover:bg-[#4338ca]',
     dotColor: 'bg-[#4f46e5]',
     badgeBg: 'bg-indigo-100 text-indigo-950 border border-indigo-300',
@@ -88,6 +97,7 @@ export const DISTINCT_EVENT_COLORS: EventColorStyle[] = [
 ];
 
 export const HOLIDAY_COLOR_STYLE: EventColorStyle = {
+  hexColor: '#dc2626',
   bgSolid: 'bg-[#dc2626] text-white font-bold hover:bg-[#b91c1c]',
   dotColor: 'bg-[#dc2626]',
   badgeBg: 'bg-rose-100 text-rose-800 border border-rose-300',
@@ -113,6 +123,25 @@ function getEventColorInMonth(
   }
 
   return DISTINCT_EVENT_COLORS[index % DISTINCT_EVENT_COLORS.length];
+}
+
+function getYearMultiEventGradient(
+  dayEvents: AcademicEvent[],
+  monthEvents: AcademicEvent[],
+  angle: string = '135deg'
+): string | undefined {
+  if (!dayEvents || dayEvents.length === 0) return undefined;
+
+  const hexColors = Array.from(
+    new Set(dayEvents.map((evt) => getEventColorInMonth(evt, monthEvents).hexColor))
+  );
+
+  if (hexColors.length === 0) return undefined;
+  if (hexColors.length === 1) {
+    return hexColors[0];
+  }
+
+  return `linear-gradient(${angle}, ${hexColors.join(', ')})`;
 }
 
 export const YearView: React.FC<YearViewProps> = ({
@@ -224,13 +253,16 @@ export const YearView: React.FC<YearViewProps> = ({
                     const dayEvents = getEventsForDate(events, dateStr);
                     const isToday = dateStr === todayStr;
                     const isSunday = dateObj.getDay() === 0;
-                    const hasHoliday = dayEvents.some((e) => e.category === 'holiday' || e.isOfficialHoliday);
+                    const isMultiEvent = dayEvents.length > 1;
 
                     // Determine the visual color style for this day based on its event in this month
                     const primaryEvent = dayEvents[0];
                     const eventStyle = primaryEvent
                       ? getEventColorInMonth(primaryEvent, monthEvents)
                       : null;
+                    const multiGradient = isMultiEvent
+                      ? getYearMultiEventGradient(dayEvents, monthEvents, '135deg')
+                      : undefined;
 
                     return (
                       <div
@@ -244,12 +276,15 @@ export const YearView: React.FC<YearViewProps> = ({
                         }}
                         title={
                           dayEvents.length > 0
-                            ? dayEvents.map((e) => e.title).join(' • ')
+                            ? `${dayEvents.length} Agenda (Gradasi Warna Agenda):\n${dayEvents.map((e) => e.title).join('\n')}`
                             : dateStr
                         }
+                        style={multiGradient ? { background: multiGradient } : undefined}
                         className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer transition-transform relative ${
                           isToday
                             ? 'bg-[#143c14] dark:bg-emerald-700 text-white font-black ring-2 ring-[#ffcc00]'
+                            : multiGradient
+                            ? 'text-white font-black scale-[0.98] shadow-2xs ring-1 ring-white/40 hover:brightness-110'
                             : eventStyle
                             ? `${eventStyle.bgSolid} font-bold scale-[0.98] shadow-2xs`
                             : isSunday
@@ -258,6 +293,12 @@ export const YearView: React.FC<YearViewProps> = ({
                         }`}
                       >
                         <span className="leading-tight">{day}</span>
+                        {isMultiEvent && (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-white shadow-xs absolute -top-0.5 -right-0.5 ring-1 ring-slate-900/30"
+                            title={`${dayEvents.length} Agenda pada tanggal ini`}
+                          />
+                        )}
                       </div>
                     );
                   })}
