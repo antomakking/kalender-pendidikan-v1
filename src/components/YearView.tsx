@@ -6,6 +6,7 @@ import {
   CATEGORIES_CONFIG,
   formatDateToISO,
   getEventsForDate,
+  isKBMDay,
   MONTH_NAMES_ID,
 } from '../utils/calendarUtils.ts';
 import { HighlightText } from './HighlightText.tsx';
@@ -253,6 +254,7 @@ export const YearView: React.FC<YearViewProps> = ({
                     const dayEvents = getEventsForDate(events, dateStr);
                     const isToday = dateStr === todayStr;
                     const isSunday = dateObj.getDay() === 0;
+                    const isKBM = isKBMDay(dateStr, events);
                     const isMultiEvent = dayEvents.length > 1;
 
                     // Determine the visual color style for this day based on its event in this month
@@ -276,7 +278,9 @@ export const YearView: React.FC<YearViewProps> = ({
                         }}
                         title={
                           dayEvents.length > 0
-                            ? `${dayEvents.length} Agenda (Gradasi Warna Agenda):\n${dayEvents.map((e) => e.title).join('\n')}`
+                            ? `${dayEvents.length} Agenda:\n${dayEvents.map((e) => e.title).join('\n')}${isKBM ? '\n[Hari KBM: Senin–Jumat]' : ''}`
+                            : isKBM
+                            ? `${dateStr} (Hari KBM Reguler: Senin–Jumat)`
                             : dateStr
                         }
                         style={multiGradient ? { background: multiGradient } : undefined}

@@ -86,7 +86,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
 
       <div className="space-y-3.5">
         {weekDays.map((dayInfo, idx) => {
-          const { dateStr, dayNumber, isToday, events: dayEvents } = dayInfo;
+          const { dateStr, dayNumber, isToday, isKBM, events: dayEvents } = dayInfo;
           const dayName = DAY_NAMES_ID[idx];
           const isDragOver = dragOverDate === dateStr;
           const hasHoliday = dayEvents.some((e) => e.category === 'holiday' || e.isOfficialHoliday);
@@ -157,12 +157,22 @@ export const WeekView: React.FC<WeekViewProps> = ({
                   </div>
 
                   <div>
-                    <span className="font-bold text-sm text-slate-900 dark:text-slate-100 block">
-                      {formatIndonesianDate(dateStr, { withDayName: false })}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm text-slate-900 dark:text-slate-100 block">
+                        {formatIndonesianDate(dateStr, { withDayName: false })}
+                      </span>
+                      {isKBM && (
+                        <span
+                          className="px-1.5 py-0.2 rounded text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-950 dark:bg-amber-950/90 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/60 shadow-2xs"
+                          title="Hari KBM (Kegiatan Belajar Mengajar: Senin–Jumat, Non-Libur)"
+                        >
+                          KBM
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-slate-500 dark:text-slate-400">
                       {dayEvents.length === 0
-                        ? 'KBM Reguler Sesuai Jadwal'
+                        ? (isKBM ? 'Kegiatan Belajar Mengajar (KBM) Reguler' : 'Tidak Ada Agenda Khusus')
                         : `${dayEvents.length} Agenda Khusus`}
                     </span>
                   </div>

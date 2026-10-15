@@ -327,7 +327,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
         {/* Grid of Days (#monthGrid) */}
         <div id="monthGrid" className="grid grid-cols-7 gap-1 sm:gap-2 auto-rows-fr w-full min-w-0">
           {days.map((dayInfo) => {
-            const { dateStr, dayNumber, isCurrentMonth, isToday, isSunday, events: dayEvents } = dayInfo;
+            const { dateStr, dayNumber, isCurrentMonth, isToday, isSunday, isKBM, events: dayEvents } = dayInfo;
             const isDragOver = dragOverDate === dateStr;
             const primaryEvent = dayEvents[0];
             const primaryStyle = primaryEvent ? getDynamicEventStyle(primaryEvent, monthEvents) : null;
@@ -376,7 +376,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
 
                 {/* Day Header */}
                 <div className="flex items-center justify-between pointer-events-none w-full min-w-0">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
                     <span
                       className={`text-xs tabular-nums leading-none ${
                         isToday
@@ -390,6 +390,14 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     >
                       {dayNumber}
                     </span>
+                    {isCurrentMonth && isKBM && (
+                      <span
+                        className="inline-flex items-center text-[9px] font-black leading-none px-1 py-0.5 rounded bg-amber-100 text-amber-950 dark:bg-amber-950/90 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/60 shadow-2xs tracking-tight"
+                        title="Hari KBM (Kegiatan Belajar Mengajar: Senin–Jumat, Non-Libur)"
+                      >
+                        KBM
+                      </span>
+                    )}
                     {isMultiEvent && multiGradient135 && (
                       <span
                         className="inline-flex items-center text-[9px] font-black text-white px-1.5 py-0.5 rounded-full shadow-2xs tracking-tight"
@@ -571,7 +579,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
         {/* Vertical Stack of Days */}
         <div className="grid grid-cols-1 gap-2.5 w-full">
           {displayedMobileDays.map((dayInfo) => {
-            const { dateStr, dayNumber, isToday, isSunday, events: dayEvents } = dayInfo;
+            const { dateStr, dayNumber, isToday, isSunday, isKBM, events: dayEvents } = dayInfo;
             const [y, m, d] = dateStr.split('-').map(Number);
             const dayOfWeekIdx = new Date(y, m - 1, d).getDay();
             const dayName = DAY_NAMES_ID[dayOfWeekIdx] || '';
@@ -617,6 +625,14 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         <span className={`text-xs font-bold ${isSunday ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
                           {dayName}
                         </span>
+                        {isKBM && (
+                          <span
+                            className="text-[9px] font-black uppercase px-1.5 py-0.2 bg-amber-100 dark:bg-amber-950/90 text-amber-950 dark:text-amber-300 rounded border border-amber-300/80 dark:border-amber-700/60 shadow-2xs"
+                            title="Hari KBM (Kegiatan Belajar Mengajar: Senin–Jumat, Non-Libur)"
+                          >
+                            KBM
+                          </span>
+                        )}
                         {isToday && (
                           <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded">
                             Hari Ini

@@ -349,12 +349,31 @@ export function getRelativeTimeStatus(event: AcademicEvent, todayStr: string = '
   };
 }
 
+export function isHolidayDate(dateStr: string, events: AcademicEvent[]): boolean {
+  if (!dateStr || !Array.isArray(events)) return false;
+  const dayEvents = getEventsForDate(events, dateStr);
+  return dayEvents.some((e) => e.category === 'holiday' || e.isOfficialHoliday);
+}
+
+export function isKBMDay(dateStr: string, events: AcademicEvent[]): boolean {
+  if (!dateStr) return false;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return false;
+  const dateObj = new Date(y, m - 1, d);
+  const dayOfWeek = dateObj.getDay(); // 0 = Ahad, 6 = Sabtu
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    return false; // Weekend (Sabtu & Ahad) is not KBM
+  }
+  return !isHolidayDate(dateStr, events);
+}
+
 export interface CalendarDayInfo {
   dateStr: string;
   dayNumber: number;
   isCurrentMonth: boolean;
   isToday: boolean;
   isSunday: boolean;
+  isKBM: boolean;
   events: AcademicEvent[];
 }
 
@@ -374,13 +393,15 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
     const day = prevMonthLastDay - i;
     const prevDate = new Date(year, month - 1, day);
     const dateStr = formatDateToISO(prevDate);
+    const dayEvts = getEventsForDate(events, dateStr);
     result.push({
       dateStr,
       dayNumber: day,
       isCurrentMonth: false,
       isToday: dateStr === todayStr,
       isSunday: prevDate.getDay() === 0,
-      events: getEventsForDate(events, dateStr),
+      isKBM: isKBMDay(dateStr, events),
+      events: dayEvts,
     });
   }
 
@@ -388,13 +409,15 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
   for (let d = 1; d <= daysInMonth; d++) {
     const curDate = new Date(year, month, d);
     const dateStr = formatDateToISO(curDate);
+    const dayEvts = getEventsForDate(events, dateStr);
     result.push({
       dateStr,
       dayNumber: d,
       isCurrentMonth: true,
       isToday: dateStr === todayStr,
       isSunday: curDate.getDay() === 0,
-      events: getEventsForDate(events, dateStr),
+      isKBM: isKBMDay(dateStr, events),
+      events: dayEvts,
     });
   }
 
@@ -404,13 +427,15 @@ export function getCalendarDaysForMonth(year: number, month: number, events: Aca
   for (let d = 1; d <= remaining; d++) {
     const nextDate = new Date(year, month + 1, d);
     const dateStr = formatDateToISO(nextDate);
+    const dayEvts = getEventsForDate(events, dateStr);
     result.push({
       dateStr,
       dayNumber: d,
       isCurrentMonth: false,
       isToday: dateStr === todayStr,
       isSunday: nextDate.getDay() === 0,
-      events: getEventsForDate(events, dateStr),
+      isKBM: isKBMDay(dateStr, events),
+      events: dayEvts,
     });
   }
 
@@ -458,13 +483,15 @@ export function getWeekDays(centerDateStr: string, events: AcademicEvent[], toda
     const cur = new Date(sunday);
     cur.setDate(sunday.getDate() + i);
     const dateStr = formatDateToISO(cur);
+    const dayEvts = getEventsForDate(events, dateStr);
     days.push({
       dateStr,
       dayNumber: cur.getDate(),
       isCurrentMonth: cur.getMonth() === m - 1,
       isToday: dateStr === todayStr,
       isSunday: i === 0,
-      events: getEventsForDate(events, dateStr),
+      isKBM: isKBMDay(dateStr, events),
+      events: dayEvts,
     });
   }
   return days;

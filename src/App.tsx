@@ -21,7 +21,7 @@ import { WeekView } from './components/WeekView.tsx';
 import { YearView } from './components/YearView.tsx';
 import { EmptyState } from './components/EmptyState.tsx';
 import { INITIAL_EVENTS } from './data/seedEvents.ts';
-import { AcademicEvent, CalendarView, ClassFilter, EventCategory, SemesterFilter } from './types.ts';
+import { AcademicEvent, CalendarView, ClassFilter, ClassLevel, EventCategory, SemesterFilter } from './types.ts';
 import {
   CATEGORIES_CONFIG,
   deduplicateEvents,
@@ -38,7 +38,7 @@ import {
   setSessionUnlocked,
 } from './utils/securityUtils.ts';
 
-const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v12';
+const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v13';
 const TODAY_STR = formatDateToISO(new Date());
 
 const VIEW_ORDER: Record<CalendarView, number> = {
@@ -70,14 +70,31 @@ export default function App() {
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v9');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v10');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v11');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v12');
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map((e: AcademicEvent) => e.id));
+          // Remove old separate Tasmi' event if present
+          const sanitized = parsed
+            .filter((e: AcademicEvent) => e.id !== 'evt-2627-1001')
+            .map((e: AcademicEvent) => {
+              if (e.id === 'evt-2627-0902' || (e.title && e.title.toLowerCase().includes('ujian tasmi') && e.startDate === '2026-09-28')) {
+                return {
+                  ...e,
+                  startDate: '2026-09-28',
+                  endDate: '2026-10-16',
+                  description: "Pelaksanaan Ujian Tasmi' hafalan Al-Qur'an sekali duduk bagi santri kelas XII (28 September – 16 Oktober 2026).",
+                  targetClasses: ['XII' as ClassLevel],
+                };
+              }
+              return e;
+            });
+
+          const existingIds = new Set(sanitized.map((e: AcademicEvent) => e.id));
           const missingSeedEvents = INITIAL_EVENTS.filter((e) => !existingIds.has(e.id));
-          const combinedEvents = [...parsed, ...missingSeedEvents];
+          const combinedEvents = [...sanitized, ...missingSeedEvents];
           // Filter out any P5 items & deduplicate
           return deduplicateEvents(
             combinedEvents.filter(
