@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Flag } from 'lucide-react';
 import { AcademicEvent, EventCategory } from '../types.ts';
 import {
@@ -156,7 +157,7 @@ export const YearView: React.FC<YearViewProps> = ({
 
       {/* Grid of 12 Months */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {academicMonths.map(({ year, month, label, semester }) => {
+        {academicMonths.map(({ year, month, label, semester }, idx) => {
           const firstDay = new Date(year, month, 1);
           const lastDay = new Date(year, month + 1, 0);
           const daysInMonth = lastDay.getDate();
@@ -170,8 +171,12 @@ export const YearView: React.FC<YearViewProps> = ({
           );
 
           return (
-            <div
+            <motion.div
               key={`${year}-${month}`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, delay: idx * 0.03, ease: 'easeOut' }}
+              whileHover={{ y: -2, transition: { duration: 0.15 } }}
               className="bg-white dark:bg-slate-900 border-2 border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs hover:border-[#143c14]/50 dark:hover:border-emerald-500/50 transition-colors flex flex-col justify-start"
             >
               <div>
@@ -321,7 +326,7 @@ export const YearView: React.FC<YearViewProps> = ({
                   </span>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

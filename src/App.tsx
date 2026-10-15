@@ -370,6 +370,7 @@ export default function App() {
 
   // 7. Navigation Handlers
   const handleNavigateMonth = (delta: number) => {
+    setViewDirection(delta >= 0 ? 1 : -1);
     if (currentView === 'month' || currentView === 'week') {
       let nextMonth = currentMonth + delta;
       let nextYear = currentYear;
@@ -656,7 +657,7 @@ export default function App() {
               <div className="relative overflow-hidden w-full">
                 <AnimatePresence mode="wait" custom={viewDirection} initial={false}>
                   <motion.div
-                    key={currentView}
+                    key={`${currentView}-${currentYear}-${currentMonth}-${academicYear}`}
                     custom={viewDirection}
                     variants={{
                       enter: (direction: number) => ({
