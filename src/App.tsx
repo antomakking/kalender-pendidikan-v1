@@ -108,9 +108,16 @@ export default function App() {
                 updated.targetClasses = ['XII' as ClassLevel];
               }
               if (updated.id === 'evt-2627-1002' || (updated.title && updated.title === 'Sumatif Akhir Semester' && updated.startDate === '2026-10-19')) {
-                updated.audience = 'Siswa Kelas XI & XII';
-                updated.targetClasses = ['XI' as ClassLevel, 'XII' as ClassLevel];
-                updated.description = 'Pelaksanaan Sumatif Akhir Semester (SAS) Ganjil bagi siswa Kelas XI & XII.';
+                updated.audience = 'Siswa Kelas XII';
+                updated.targetClasses = ['XII' as ClassLevel];
+                updated.description = 'Pelaksanaan Sumatif Akhir Semester (SAS) Ganjil bagi siswa Kelas XII.';
+              }
+              if (updated.id === 'evt-2627-1104' || titleLower.includes('kls 11 dan 12') || (updated.startDate === '2026-11-23' && titleLower.includes('sumatif'))) {
+                updated.title = 'Sumatif Akhir Semester';
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+                updated.description = 'Asesmen Sumatif Akhir Semester (SAS) Ganjil bagi siswa Kelas X dan XI.';
+                updated.category = 'assessment';
               }
               if (titleLower.includes('tes kompetensi akademik') || titleLower.includes('tka') || titleLower.includes('ujian sekolah')) {
                 updated.audience = 'Siswa Kelas XII';

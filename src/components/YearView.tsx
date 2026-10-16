@@ -303,16 +303,13 @@ export const YearView: React.FC<YearViewProps> = ({
                           />
                         )}
 
-                        {/* YearView Multi-Agenda Hover Popover (Edge-Aware) */}
+                        {/* YearView Multi-Agenda Hover Popover (Card-Aligned, Zero Clipping) */}
                         {dayEvents.length > 0 && (
                           <div
-                            className={`absolute bottom-full mb-2 hidden group-hover/day:flex flex-col w-64 sm:w-72 bg-slate-900/98 text-white rounded-xl shadow-2xl p-2.5 border border-slate-700 pointer-events-auto z-50 text-left cursor-default font-normal transition-all ${
-                              isLeftEdge
-                                ? 'left-0 sm:-left-2'
-                                : isRightEdge
-                                ? 'right-0 sm:-right-2'
-                                : 'left-1/2 -translate-x-1/2'
-                            }`}
+                            className="absolute bottom-full mb-2 hidden group-hover/day:flex flex-col w-[250px] sm:w-[275px] max-w-[calc(100vw-32px)] bg-slate-900/98 text-white rounded-xl shadow-2xl p-2.5 border border-slate-700 pointer-events-auto z-50 text-left cursor-default font-normal transition-all"
+                            style={{
+                              left: `calc(-${colIndex * 100}% - ${colIndex * 0.25}rem)`,
+                            }}
                           >
                             <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800 text-[11px]">
                               <span className="font-bold text-white leading-tight">
@@ -349,14 +346,12 @@ export const YearView: React.FC<YearViewProps> = ({
                                 );
                               })}
                             </div>
+                            {/* Arrow pointing to the specific day column */}
                             <div
-                              className={`absolute top-full -mt-0.5 border-4 border-transparent border-t-slate-900/98 ${
-                                isLeftEdge
-                                  ? 'left-4'
-                                  : isRightEdge
-                                  ? 'right-4'
-                                  : 'left-1/2 -translate-x-1/2'
-                              }`}
+                              className="absolute top-full -mt-0.5 border-4 border-transparent border-t-slate-900/98 -translate-x-1/2"
+                              style={{
+                                left: `calc(${(colIndex + 0.5) / 7 * 100}%)`,
+                              }}
                             />
                           </div>
                         )}
