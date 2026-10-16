@@ -1,4 +1,4 @@
-import { AcademicEvent, CategoryMeta, ClassLevel, EventCategory, SemesterFilter } from '../types.ts';
+import { AcademicEvent, CategoryMeta, ClassFilter, ClassLevel, EventCategory, SemesterFilter } from '../types.ts';
 
 export const PRIMARY_CATEGORIES: EventCategory[] = [
   'kbm',
@@ -123,13 +123,13 @@ export function getEventClasses(event: AcademicEvent): ClassLevel[] {
   const text = `${event.title} ${event.audience} ${event.description}`.toUpperCase();
   const classes: ClassLevel[] = [];
 
-  if (/\bKELAS\s*12\b|\bKELAS\s*XII\b|\bXII\b/.test(text)) {
+  if (/\bKELAS\s*(?:12|XII)\b|\b12\b|\bXII\b/i.test(text)) {
     classes.push('XII');
   }
-  if (/\bKELAS\s*11\b|\bKELAS\s*XI\b|\bXI\b/.test(text)) {
+  if (/\bKELAS\s*(?:11|XI)\b|\b11\b|\bXI\b/i.test(text)) {
     classes.push('XI');
   }
-  if (/\bKELAS\s*10\b|\bKELAS\s*X\b|\bX\b/.test(text)) {
+  if (/\bKELAS\s*(?:10|X)\b|\b10\b|\bX\b/i.test(text)) {
     classes.push('X');
   }
 
@@ -218,6 +218,15 @@ export function isDateInRange(
   // Check if explicitly excluded
   if (SELECTED_EXCLUDED_DATES.has(targetDateStr)) {
     return false;
+  }
+
+  // Check Sunday rule: On Sunday (Ahad), no events/activities or marks except Official National Holidays
+  const [y, m, d] = targetDateStr.split('-').map(Number);
+  const dayOfWeek = new Date(y, m - 1, d).getDay();
+  if (dayOfWeek === 0) {
+    if (!event || (event.category !== 'holiday' && !event.isOfficialHoliday)) {
+      return false;
+    }
   }
 
   if (event) {
@@ -899,3 +908,286 @@ export function generateRecurringEventDates(params: GenerateRecurringDatesParams
 
   return results;
 }
+
+export interface MonthlyDashboardItem {
+  monthIndex: number; // 0..11
+  monthName: string;  // e.g. 'Juli'
+  year: number;       // e.g. 2026
+  monthKey: string;   // '2026-07'
+  semester: 'ganjil' | 'genap';
+  agendaCount: number;
+  effectiveKbmDays: number;
+  holidayDays: number;
+  totalDurationHours: number;
+  assessmentCount: number;
+  categoryBreakdown: Record<EventCategory, number>;
+  events: AcademicEvent[];
+}
+
+export interface CategoryDistributionItem {
+  category: EventCategory;
+  label: string;
+  count: number;
+  percentage: number;
+  totalHours: number;
+  color: string;
+  bgLight: string;
+}
+
+export interface DashboardStatsResult {
+  monthlyData: MonthlyDashboardItem[];
+  categoryDistribution: CategoryDistributionItem[];
+  semesterTotals: {
+    totalAgendas: number;
+    totalKbmDays: number;
+    totalHolidayDays: number;
+    totalDurationHours: number;
+    totalAssessments: number;
+  };
+  peakWorkloadMonth: MonthlyDashboardItem | null;
+  highPriorityAgendas: AcademicEvent[];
+}
+
+export function calculateMonthlyDashboardStats(
+  events: AcademicEvent[],
+  academicYear: string = '2026/2027',
+  semesterFilter: SemesterFilter = 'all',
+  classFilter: ClassFilter = 'all'
+): DashboardStatsResult {
+  let startYear = 2026;
+  let endYear = 2027;
+  const parts = academicYear.split('/');
+  if (parts.length === 2) {
+    startYear = parseInt(parts[0], 10) || 2026;
+    endYear = parseInt(parts[1], 10) || 2027;
+  }
+
+  // Academic months in order: Jul(6), Aug(7), Sep(8), Oct(9), Nov(10), Dec(11) -> Ganjil
+  // Jan(0), Feb(1), Mar(2), Apr(3), May(4), Jun(5) -> Genap
+  const academicMonths: { monthIndex: number; year: number; semester: 'ganjil' | 'genap' }[] = [
+    { monthIndex: 6, year: startYear, semester: 'ganjil' },
+    { monthIndex: 7, year: startYear, semester: 'ganjil' },
+    { monthIndex: 8, year: startYear, semester: 'ganjil' },
+    { monthIndex: 9, year: startYear, semester: 'ganjil' },
+    { monthIndex: 10, year: startYear, semester: 'ganjil' },
+    { monthIndex: 11, year: startYear, semester: 'ganjil' },
+    { monthIndex: 0, year: endYear, semester: 'genap' },
+    { monthIndex: 1, year: endYear, semester: 'genap' },
+    { monthIndex: 2, year: endYear, semester: 'genap' },
+    { monthIndex: 3, year: endYear, semester: 'genap' },
+    { monthIndex: 4, year: endYear, semester: 'genap' },
+    { monthIndex: 5, year: endYear, semester: 'genap' },
+  ];
+
+  // Filter events by class filter
+  const classFilteredEvents = events.filter((e) => {
+    if (classFilter === 'all') return true;
+    if (e.targetClasses && e.targetClasses.length > 0) {
+      return e.targetClasses.includes(classFilter);
+    }
+    if (e.audience) {
+      if (e.audience.includes('Semua') || e.audience.includes(`Kelas ${classFilter}`)) return true;
+    }
+    return true;
+  });
+
+  // Collect holiday dates for academic year
+  const holidayDateSet = new Set<string>();
+  events
+    .filter((e) => e.category === 'holiday')
+    .forEach((e) => {
+      const [sy, sm, sd] = e.startDate.split('-').map(Number);
+      const [ey, em, ed] = e.endDate.split('-').map(Number);
+      const cur = new Date(sy, sm - 1, sd);
+      const end = new Date(ey, em - 1, ed);
+      while (cur <= end) {
+        holidayDateSet.add(formatDateToISO(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+    });
+
+  const monthlyData: MonthlyDashboardItem[] = [];
+  const categoryCounts: Record<EventCategory, number> = {
+    kbm: 0,
+    assessment: 0,
+    school: 0,
+    student: 0,
+    holiday: 0,
+    academic: 0,
+    teacher: 0,
+  };
+  const categoryHoursMap: Record<EventCategory, number> = {
+    kbm: 0,
+    assessment: 0,
+    school: 0,
+    student: 0,
+    holiday: 0,
+    academic: 0,
+    teacher: 0,
+  };
+
+  let semTotalAgendas = 0;
+  let semTotalKbmDays = 0;
+  let semTotalHolidayDays = 0;
+  let semTotalHours = 0;
+  let semTotalAssessments = 0;
+
+  academicMonths.forEach(({ monthIndex, year, semester }) => {
+    // Skip if semester filter does not match
+    if (semesterFilter !== 'all' && semesterFilter !== semester) {
+      return;
+    }
+
+    const monthName = MONTH_NAMES_ID[monthIndex];
+    const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+    const daysInM = new Date(year, monthIndex + 1, 0).getDate();
+
+    // Compute effective KBM and holiday days for this month
+    let effectiveKbmDays = 0;
+    let holidayDays = 0;
+
+    for (let d = 1; d <= daysInM; d++) {
+      const dateObj = new Date(year, monthIndex, d);
+      const dateStr = formatDateToISO(dateObj);
+      const dayOfWeek = dateObj.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const isHoliday = holidayDateSet.has(dateStr);
+
+      if (!isWeekend) {
+        if (isHoliday) {
+          holidayDays++;
+        } else {
+          effectiveKbmDays++;
+        }
+      } else if (isHoliday && dayOfWeek !== 0) {
+        holidayDays++;
+      }
+    }
+
+    // Find events touching this month
+    const mStartISO = `${monthKey}-01`;
+    const mEndISO = `${monthKey}-${String(daysInM).padStart(2, '0')}`;
+
+    const monthEvents = classFilteredEvents.filter((e) => {
+      return e.startDate <= mEndISO && e.endDate >= mStartISO;
+    });
+
+    const categoryBreakdown: Record<EventCategory, number> = {
+      kbm: 0,
+      assessment: 0,
+      school: 0,
+      student: 0,
+      holiday: 0,
+      academic: 0,
+      teacher: 0,
+    };
+
+    let monthHours = 0;
+    let monthAssessments = 0;
+
+    monthEvents.forEach((e) => {
+      categoryBreakdown[e.category] = (categoryBreakdown[e.category] || 0) + 1;
+      categoryCounts[e.category] = (categoryCounts[e.category] || 0) + 1;
+
+      if (e.category === 'assessment') monthAssessments++;
+
+      // Calculate estimated duration hours
+      const [sy, sm, sd] = e.startDate.split('-').map(Number);
+      const [ey, em, ed] = e.endDate.split('-').map(Number);
+      const startD = new Date(sy, sm - 1, sd);
+      const endD = new Date(ey, em - 1, ed);
+      const numDays = Math.max(1, Math.round((endD.getTime() - startD.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+
+      let eventHours = 0;
+      if (e.startTime && e.endTime) {
+        const [sh, smin] = e.startTime.split(':').map(Number);
+        const [eh, emin] = e.endTime.split(':').map(Number);
+        const dailyH = Math.max(1, (eh * 60 + emin - (sh * 60 + smin)) / 60);
+        eventHours = Math.round(dailyH * numDays);
+      } else {
+        // Defaults per category
+        const defaultHoursPerDay: Record<EventCategory, number> = {
+          kbm: 6,
+          assessment: 5,
+          school: 4,
+          student: 3,
+          holiday: 0,
+          academic: 4,
+          teacher: 3,
+        };
+        eventHours = (defaultHoursPerDay[e.category] || 4) * numDays;
+      }
+
+      monthHours += eventHours;
+      categoryHoursMap[e.category] = (categoryHoursMap[e.category] || 0) + eventHours;
+    });
+
+    semTotalAgendas += monthEvents.length;
+    semTotalKbmDays += effectiveKbmDays;
+    semTotalHolidayDays += holidayDays;
+    semTotalHours += monthHours;
+    semTotalAssessments += monthAssessments;
+
+    monthlyData.push({
+      monthIndex,
+      monthName,
+      year,
+      monthKey,
+      semester,
+      agendaCount: monthEvents.length,
+      effectiveKbmDays,
+      holidayDays,
+      totalDurationHours: monthHours,
+      assessmentCount: monthAssessments,
+      categoryBreakdown,
+      events: monthEvents,
+    });
+  });
+
+  // Build category distribution items for Donut Chart
+  const totalCatCount = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  const categoryDistribution: CategoryDistributionItem[] = (
+    Object.keys(CATEGORIES_CONFIG) as EventCategory[]
+  ).map((cat) => {
+    const count = categoryCounts[cat] || 0;
+    const meta = CATEGORIES_CONFIG[cat];
+    const percentage = totalCatCount > 0 ? Math.round((count / totalCatCount) * 100) : 0;
+    return {
+      category: cat,
+      label: meta.label,
+      count,
+      percentage,
+      totalHours: categoryHoursMap[cat] || 0,
+      color: meta.dotColor,
+      bgLight: meta.bgLight,
+    };
+  }).filter((item) => item.count > 0 || semesterFilter === 'all');
+
+  // Peak workload month (highest agendaCount or assessmentCount)
+  let peakWorkloadMonth: MonthlyDashboardItem | null = null;
+  if (monthlyData.length > 0) {
+    peakWorkloadMonth = [...monthlyData].sort(
+      (a, b) => b.assessmentCount * 3 + b.agendaCount - (a.assessmentCount * 3 + a.agendaCount)
+    )[0];
+  }
+
+  // High Priority Agendas (Assessments / Ujian)
+  const highPriorityAgendas = classFilteredEvents
+    .filter((e) => e.category === 'assessment')
+    .slice(0, 5);
+
+  return {
+    monthlyData,
+    categoryDistribution,
+    semesterTotals: {
+      totalAgendas: semTotalAgendas,
+      totalKbmDays: semTotalKbmDays,
+      totalHolidayDays: semTotalHolidayDays,
+      totalDurationHours: semTotalHours,
+      totalAssessments: semTotalAssessments,
+    },
+    peakWorkloadMonth,
+    highPriorityAgendas,
+  };
+}
+

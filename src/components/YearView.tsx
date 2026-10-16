@@ -5,6 +5,8 @@ import { AcademicEvent, EventCategory } from '../types.ts';
 import {
   CATEGORIES_CONFIG,
   formatDateToISO,
+  formatIndonesianDate,
+  getEventClasses,
   getEventsForDate,
   isKBMDay,
   MONTH_NAMES_ID,
@@ -266,6 +268,11 @@ export const YearView: React.FC<YearViewProps> = ({
                       ? getYearMultiEventGradient(dayEvents, monthEvents, '135deg')
                       : undefined;
 
+                    // Determine grid column index (0=Ahad, 1=Senin, ..., 6=Sabtu)
+                    const colIndex = (startDayOfWeek + i) % 7;
+                    const isLeftEdge = colIndex <= 1;
+                    const isRightEdge = colIndex >= 5;
+
                     return (
                       <div
                         key={dateStr}
@@ -276,15 +283,8 @@ export const YearView: React.FC<YearViewProps> = ({
                             onSelectDate(dateStr);
                           }
                         }}
-                        title={
-                          dayEvents.length > 0
-                            ? `${dayEvents.length} Agenda:\n${dayEvents.map((e) => e.title).join('\n')}${isKBM ? '\n[Hari KBM: Senin–Jumat]' : ''}`
-                            : isKBM
-                            ? `${dateStr} (Hari KBM Reguler: Senin–Jumat)`
-                            : dateStr
-                        }
                         style={multiGradient ? { background: multiGradient } : undefined}
-                        className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer transition-transform relative ${
+                        className={`py-1 rounded-md flex flex-col items-center justify-center cursor-pointer transition-all relative group/day hover:z-50 ${
                           isToday
                             ? 'bg-[#143c14] dark:bg-emerald-700 text-white font-black ring-2 ring-[#ffcc00]'
                             : multiGradient
@@ -300,8 +300,65 @@ export const YearView: React.FC<YearViewProps> = ({
                         {isMultiEvent && (
                           <span
                             className="w-1.5 h-1.5 rounded-full bg-white shadow-xs absolute -top-0.5 -right-0.5 ring-1 ring-slate-900/30"
-                            title={`${dayEvents.length} Agenda pada tanggal ini`}
                           />
+                        )}
+
+                        {/* YearView Multi-Agenda Hover Popover (Edge-Aware) */}
+                        {dayEvents.length > 0 && (
+                          <div
+                            className={`absolute bottom-full mb-2 hidden group-hover/day:flex flex-col w-64 sm:w-72 bg-slate-900/98 text-white rounded-xl shadow-2xl p-2.5 border border-slate-700 pointer-events-auto z-50 text-left cursor-default font-normal transition-all ${
+                              isLeftEdge
+                                ? 'left-0 sm:-left-2'
+                                : isRightEdge
+                                ? 'right-0 sm:-right-2'
+                                : 'left-1/2 -translate-x-1/2'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800 text-[11px]">
+                              <span className="font-bold text-white leading-tight">
+                                {formatIndonesianDate(dateStr, { withDayName: true })}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-[#ffcc00] text-slate-950 text-[9px] font-black shrink-0">
+                                {dayEvents.length} Agenda
+                              </span>
+                            </div>
+                            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                              {dayEvents.map((evt) => {
+                                const classes = getEventClasses(evt);
+                                const classLabel = classes.length === 3 ? 'Kelas X, XI, XII' : classes.map((c) => `Kelas ${c}`).join(', ');
+                                return (
+                                  <div
+                                    key={evt.id}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onSelectEvent(evt);
+                                    }}
+                                    className="p-2 rounded-lg bg-slate-800/90 hover:bg-slate-800 text-[10px] space-y-1 border border-slate-700/70 hover:border-emerald-500/80 transition-all cursor-pointer"
+                                  >
+                                    <div className="flex items-start justify-between gap-1 font-bold text-white">
+                                      <span className="line-clamp-2 leading-tight">{evt.title}</span>
+                                      <span className="px-1.5 py-0.2 rounded text-[8.5px] bg-amber-400 text-slate-950 font-black shrink-0">
+                                        🎓 {classLabel}
+                                      </span>
+                                    </div>
+                                    <div className="text-emerald-300/90 text-[9px] font-medium flex items-center justify-between gap-1 pt-0.5 border-t border-slate-700/40">
+                                      <span>{evt.startTime && evt.endTime ? `${evt.startTime} WITA` : 'Sepanjang Hari'}</span>
+                                      <span className="truncate max-w-[110px] text-slate-300">{evt.audience}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div
+                              className={`absolute top-full -mt-0.5 border-4 border-transparent border-t-slate-900/98 ${
+                                isLeftEdge
+                                  ? 'left-4'
+                                  : isRightEdge
+                                  ? 'right-4'
+                                  : 'left-1/2 -translate-x-1/2'
+                              }`}
+                            />
+                          </div>
                         )}
                       </div>
                     );
@@ -337,6 +394,8 @@ export const YearView: React.FC<YearViewProps> = ({
                     </span>
                     {monthEvents.map((evt) => {
                       const eventStyle = getEventColorInMonth(evt, monthEvents);
+                      const classes = getEventClasses(evt);
+                      const classShort = classes.length === 3 ? 'X-XII' : classes.join(',');
                       const isMatch = Boolean(
                         searchQuery?.trim() &&
                         ((evt.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -355,9 +414,12 @@ export const YearView: React.FC<YearViewProps> = ({
                           className={`truncate text-[10px] font-semibold px-2 py-0.5 rounded cursor-pointer flex items-center justify-between gap-1 shadow-xs hover:brightness-110 transition-all ${
                             eventStyle.bgSolid
                           } ${isMatch ? 'ring-2 ring-amber-400 brightness-110 shadow-sm scale-[1.01]' : ''}`}
-                          title={`${evt.title} (${evt.startDate} s/d ${evt.endDate})`}
+                          title={`${evt.title} (Kelas: ${classes.join(', ')})`}
                         >
                           <HighlightText text={evt.title} query={searchQuery} className="truncate flex-1" />
+                          <span className="text-[8.5px] font-black px-1 rounded bg-black/25 text-white/90 shrink-0">
+                            🎓 {classShort}
+                          </span>
                           <span className="text-[9px] opacity-85 shrink-0 tabular-nums font-mono">
                             {dateRangeText} {MONTH_NAMES_ID[month].slice(0, 3)}
                           </span>

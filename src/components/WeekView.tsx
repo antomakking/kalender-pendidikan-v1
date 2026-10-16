@@ -5,6 +5,7 @@ import {
   CATEGORIES_CONFIG,
   DAY_NAMES_ID,
   formatIndonesianDate,
+  getEventClasses,
   getWeekDays,
 } from '../utils/calendarUtils.ts';
 import { HighlightText } from './HighlightText.tsx';
@@ -258,22 +259,31 @@ export const WeekView: React.FC<WeekViewProps> = ({
                           isBeingDragged ? 'opacity-40 border-dashed border-emerald-500 scale-98' : ''
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <GripVertical className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover/card:text-slate-600 dark:group-hover/card:text-slate-300 shrink-0" />
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1 ${cat.bgSolid}`}
-                            >
-                              <span>{cat.label}</span>
-                            </span>
-                          </div>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                            {evt.startTime && evt.endTime
-                              ? `${evt.startTime} – ${evt.endTime} WITA`
-                              : 'Sepanjang Hari'}
-                          </span>
-                        </div>
+                        {(() => {
+                          const classes = getEventClasses(evt);
+                          const classLabel = classes.length === 3 ? 'Kelas X, XI, XII' : classes.map((c) => `Kelas ${c}`).join(', ');
+                          return (
+                            <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <GripVertical className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover/card:text-slate-600 dark:group-hover/card:text-slate-300 shrink-0" />
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1 ${cat.bgSolid}`}
+                                >
+                                  <span>{cat.label}</span>
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-400 text-slate-950 border border-amber-300 shadow-2xs">
+                                  🎓 {classLabel}
+                                </span>
+                              </div>
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                                {evt.startTime && evt.endTime
+                                  ? `${evt.startTime} – ${evt.endTime} WITA`
+                                  : 'Sepanjang Hari'}
+                              </span>
+                            </div>
+                          );
+                        })()}
 
                         <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm leading-snug line-clamp-2">
                           <HighlightText text={evt.title} query={searchQuery} />

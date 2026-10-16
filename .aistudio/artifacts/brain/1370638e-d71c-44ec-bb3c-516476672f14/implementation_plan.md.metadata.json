@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for the Academic Dashboard & Visual Analytics feature in the SMK IT Ibnul Qayyim Academic Calendar. Includes a new dedicated 'Dashboard' view with interactive Bar Chart (monthly workload/KBM) and Donut Chart (category breakdown), dynamic metrics cards, class/semester filters, and animated transitions.",
+  "updatedAt": "2026-10-16T05:23:44.779859381Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

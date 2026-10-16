@@ -8,6 +8,8 @@ import {
   ExternalLink,
   MapPin,
   Repeat,
+  ShieldCheck,
+  Sparkles,
   Trash2,
   Users,
   X,
@@ -19,20 +21,25 @@ import {
   formatIndonesianDate,
   generateICalFile,
   getEventClasses,
+  getEventsForDate,
 } from '../utils/calendarUtils.ts';
 
 interface EventDetailModalProps {
   event: AcademicEvent | null;
+  events?: AcademicEvent[];
   onClose: () => void;
   onEdit: (event: AcademicEvent) => void;
   onDelete: (id: string, deleteSeries?: boolean) => void;
+  onSelectEvent?: (event: AcademicEvent) => void;
 }
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   event,
+  events = [],
   onClose,
   onEdit,
   onDelete,
+  onSelectEvent,
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -75,6 +82,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${sDate}/${eDate}&details=${details}&location=${loc}`;
   };
 
+  const sameDateEvents = events ? getEventsForDate(events, event.startDate) : [];
+
   return (
     <div
       className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop"
@@ -87,11 +96,77 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 z-10"
           title="Tutup (Esc)"
         >
           <X className="w-5 h-5" />
         </button>
+
+        {/* Multi-Agenda Switcher on Same Date */}
+        {sameDateEvents.length > 1 && (
+          <div className="mb-4 pr-8 p-3 bg-slate-100/90 dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>{sameDateEvents.length} Agenda pada Tanggal Ini ({formatIndonesianDate(event.startDate)})</span>
+              </span>
+              <span className="text-[10px] font-black text-[#143c14] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 shrink-0">
+                Semua Bisa Diedit
+              </span>
+            </div>
+
+            <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+              {sameDateEvents.map((item) => {
+                const isCurrent = item.id === event.id;
+                const classes = getEventClasses(item);
+                const classText = classes.length === 3 ? 'Kelas X, XI, XII' : classes.map((c) => `Kelas ${c}`).join(', ');
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => onSelectEvent && onSelectEvent(item)}
+                    className={`p-2 rounded-lg transition-all flex items-center justify-between gap-2 cursor-pointer border ${
+                      isCurrent
+                        ? 'bg-[#143c14] text-white border-[#143c14] shadow-xs'
+                        : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate min-w-0 flex-1">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isCurrent ? 'bg-[#ffcc00]' : 'bg-emerald-500'}`} />
+                      <span className="text-xs font-bold truncate">{item.title}</span>
+                      <span
+                        className={`text-[9.5px] font-black px-1.5 py-0.2 rounded shrink-0 ${
+                          isCurrent
+                            ? 'bg-[#ffcc00] text-slate-950'
+                            : 'bg-amber-100 dark:bg-amber-950 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-800'
+                        }`}
+                      >
+                        🎓 {classText}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(item);
+                      }}
+                      className={`px-2 py-1 text-[10.5px] font-bold rounded flex items-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs ${
+                        isCurrent
+                          ? 'bg-[#ffcc00] text-slate-950 hover:bg-amber-300'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-[#143c14] hover:text-white border border-slate-300 dark:border-slate-600'
+                      }`}
+                      title={`Edit Agenda "${item.title}"`}
+                    >
+                      <Edit className="w-3 h-3" />
+                      <span>Edit Agenda Ini</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Category, Class & Recurring Pills */}
         <div className="mb-3 flex flex-wrap items-center gap-1.5">
@@ -199,14 +274,20 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-950/50 border-2 border-rose-300 dark:border-rose-800 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-              <div>
-                <h5 className="text-xs font-bold text-rose-900 dark:text-rose-200">
-                  {isRecurring ? 'Konfirmasi Hapus Agenda Berulang' : 'Konfirmasi Hapus Agenda'}
-                </h5>
-                <p className="text-xs text-rose-800 dark:text-rose-300 mt-1 leading-relaxed">
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h5 className="text-xs font-bold text-rose-900 dark:text-rose-200">
+                    {isRecurring ? 'Konfirmasi Hapus Agenda Berulang' : 'Konfirmasi Hapus Agenda'}
+                  </h5>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9.5px] font-black bg-rose-200 text-rose-950 dark:bg-rose-900 dark:text-rose-200 shrink-0">
+                    <ShieldCheck className="w-3 h-3 text-rose-700 dark:text-rose-300" />
+                    <span>Mode Admin (PIN)</span>
+                  </span>
+                </div>
+                <p className="text-xs text-rose-800 dark:text-rose-300 leading-relaxed">
                   {isRecurring
-                    ? `Agenda "${event.title}" merupakan bagian dari agenda berulang. Pilih cakupan penghapusan:`
-                    : `Yakin ingin menghapus agenda "${event.title}" secara permanen dari kalender akademik?`}
+                    ? `Agenda "${event.title}" merupakan bagian dari agenda berulang. Diperlukan PIN Otentikasi Pengelola (Mode Admin) untuk menghapus.`
+                    : `Yakin ingin menghapus agenda "${event.title}" secara permanen dari kalender akademik? Diperlukan PIN Otentikasi Pengelola (Mode Admin) untuk menghapus.`}
                 </p>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">

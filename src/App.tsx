@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { AlertTriangle } from 'lucide-react';
 import { AgendaView } from './components/AgendaView.tsx';
 import { ControlsBar } from './components/ControlsBar.tsx';
+import { DashboardView } from './components/DashboardView.tsx';
 import { EventDetailModal } from './components/EventDetailModal.tsx';
 import { EventFormModal } from './components/EventFormModal.tsx';
 import { ExportICalModal } from './components/ExportICalModal.tsx';
@@ -38,7 +39,7 @@ import {
   setSessionUnlocked,
 } from './utils/securityUtils.ts';
 
-const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v13';
+const STORAGE_KEY = 'smk_it_kalender_events_full_2526_2627_v17';
 const TODAY_STR = formatDateToISO(new Date());
 
 const VIEW_ORDER: Record<CalendarView, number> = {
@@ -46,6 +47,7 @@ const VIEW_ORDER: Record<CalendarView, number> = {
   month: 1,
   week: 2,
   agenda: 3,
+  dashboard: 4,
 };
 
 interface ToastState {
@@ -71,25 +73,54 @@ export default function App() {
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v10');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v11');
       localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v12');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v13');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v14');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v15');
+      localStorage.removeItem('smk_it_kalender_events_full_2526_2627_v16');
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Remove old separate Tasmi' event if present
+          // Remove old separate Tasmi' event if present & sanitize SAS/TKA/Ujian Sekolah Categories
           const sanitized = parsed
             .filter((e: AcademicEvent) => e.id !== 'evt-2627-1001')
             .map((e: AcademicEvent) => {
-              if (e.id === 'evt-2627-0902' || (e.title && e.title.toLowerCase().includes('ujian tasmi') && e.startDate === '2026-09-28')) {
-                return {
-                  ...e,
-                  startDate: '2026-09-28',
-                  endDate: '2026-10-16',
-                  description: "Pelaksanaan Ujian Tasmi' hafalan Al-Qur'an sekali duduk bagi santri kelas XII (28 September – 16 Oktober 2026).",
-                  targetClasses: ['XII' as ClassLevel],
-                };
+              let updated = { ...e };
+              const titleLower = (updated.title || '').toLowerCase();
+
+              // Remap category to 'assessment' for exam activities
+              if (
+                titleLower.includes('tasmi') ||
+                titleLower.includes('sumatif') ||
+                titleLower.includes('tes kompetensi akademik') ||
+                titleLower.includes('tka') ||
+                titleLower.includes('ujian sekolah') ||
+                titleLower.includes('ujian tahfizh')
+              ) {
+                updated.category = 'assessment';
               }
-              return e;
+
+              if (updated.id === 'evt-2627-0902' || (updated.title && titleLower.includes('ujian tasmi') && updated.startDate === '2026-09-28')) {
+                updated.startDate = '2026-09-28';
+                updated.endDate = '2026-10-16';
+                updated.description = "Pelaksanaan Ujian Tasmi' hafalan Al-Qur'an sekali duduk bagi santri kelas XII (28 September – 16 Oktober 2026).";
+                updated.targetClasses = ['XII' as ClassLevel];
+              }
+              if (updated.id === 'evt-2627-1002' || (updated.title && updated.title === 'Sumatif Akhir Semester' && updated.startDate === '2026-10-19')) {
+                updated.audience = 'Siswa Kelas XI & XII';
+                updated.targetClasses = ['XI' as ClassLevel, 'XII' as ClassLevel];
+                updated.description = 'Pelaksanaan Sumatif Akhir Semester (SAS) Ganjil bagi siswa Kelas XI & XII.';
+              }
+              if (titleLower.includes('tes kompetensi akademik') || titleLower.includes('tka') || titleLower.includes('ujian sekolah')) {
+                updated.audience = 'Siswa Kelas XII';
+                updated.targetClasses = ['XII' as ClassLevel];
+              }
+              if (titleLower.includes('pesantren ramadhan') || titleLower.includes('pesantren kilat')) {
+                updated.audience = 'Seluruh Murid kelas X dan XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+              return updated;
             });
 
           const existingIds = new Set(sanitized.map((e: AcademicEvent) => e.id));
@@ -519,33 +550,35 @@ export default function App() {
   };
 
   const handleDeleteEvent = (id: string, deleteSeries = false) => {
-    const eventToDelete = events.find((e) => e.id === id);
-    if (!eventToDelete) return;
+    executeWithPinProtection(() => {
+      const eventToDelete = events.find((e) => e.id === id);
+      if (!eventToDelete) return;
 
-    setEvents((prev) => {
-      let updated: AcademicEvent[];
-      if (deleteSeries && eventToDelete.recurrenceId) {
-        updated = prev.filter((e) => e.recurrenceId !== eventToDelete.recurrenceId);
-      } else {
-        updated = prev.filter((e) => e.id !== id);
-      }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (err) {
-        console.error('Failed to update storage after deletion:', err);
-      }
-      return updated;
-    });
+      setEvents((prev) => {
+        let updated: AcademicEvent[];
+        if (deleteSeries && eventToDelete.recurrenceId) {
+          updated = prev.filter((e) => e.recurrenceId !== eventToDelete.recurrenceId);
+        } else {
+          updated = prev.filter((e) => e.id !== id);
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (err) {
+          console.error('Failed to update storage after deletion:', err);
+        }
+        return updated;
+      });
 
-    setSelectedEvent(null);
-    setToast({
-      id: Date.now(),
-      message:
-        deleteSeries && eventToDelete.recurrenceId
-          ? `Seluruh seri agenda berulang "${eventToDelete.title}" berhasil dihapus.`
-          : `Agenda "${eventToDelete.title}" berhasil dihapus.`,
-    });
-    setTimeout(() => setToast(null), 3000);
+      setSelectedEvent(null);
+      setToast({
+        id: Date.now(),
+        message:
+          deleteSeries && eventToDelete.recurrenceId
+            ? `Seluruh seri agenda berulang "${eventToDelete.title}" berhasil dihapus.`
+            : `Agenda "${eventToDelete.title}" berhasil dihapus.`,
+      });
+      setTimeout(() => setToast(null), 3000);
+    }, 'Hapus Agenda (Mode Admin)');
   };
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
@@ -647,128 +680,140 @@ export default function App() {
           onOpenHebMatrix={() => setIsHebMatrixOpen(true)}
         />
 
-        {/* Calendar Grid & Sidebar Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-          {/* Main Calendar View Area */}
-          <section className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden transition-colors">
-            {filteredEvents.length === 0 ? (
-              <div className="p-6 sm:p-12">
-                <EmptyState
-                  type={searchQuery ? 'search' : 'filter'}
-                  query={searchQuery}
-                  categoryLabel={
-                    categoryFilter !== 'all'
-                      ? CATEGORIES_CONFIG[categoryFilter]?.label
-                      : undefined
-                  }
-                  onResetFilters={() => {
-                    setSearchQuery('');
-                    setCategoryFilter('all');
-                    setSemester('all');
-                    setClassFilter('all');
-                  }}
-                  onAddEvent={() => handleOpenAddEvent()}
-                />
-              </div>
-            ) : (
-              <div className="relative overflow-hidden w-full">
-                <AnimatePresence mode="wait" custom={viewDirection} initial={false}>
-                  <motion.div
-                    key={`${currentView}-${currentYear}-${currentMonth}-${academicYear}`}
-                    custom={viewDirection}
-                    variants={{
-                      enter: (direction: number) => ({
-                        x: direction > 0 ? 32 : -32,
-                        opacity: 0,
-                      }),
-                      center: {
-                        x: 0,
-                        opacity: 1,
-                        transition: {
-                          x: { type: 'spring', stiffness: 360, damping: 32 },
-                          opacity: { duration: 0.2, ease: 'easeOut' },
-                        },
-                      },
-                      exit: (direction: number) => ({
-                        x: direction > 0 ? -32 : 32,
-                        opacity: 0,
-                        transition: {
-                          x: { type: 'spring', stiffness: 360, damping: 32 },
-                          opacity: { duration: 0.16, ease: 'easeIn' },
-                        },
-                      }),
-                    }}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="w-full"
-                  >
-                    {currentView === 'month' && (
-                      <MonthView
-                        currentYear={currentYear}
-                        currentMonth={currentMonth}
-                        events={filteredEvents}
-                        todayStr={TODAY_STR}
-                        searchQuery={searchQuery}
-                        onSelectEvent={(evt) => setSelectedEvent(evt)}
-                        onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
-                        onRescheduleEvent={handleRescheduleEvent}
-                      />
-                    )}
-
-                    {currentView === 'year' && (
-                      <YearView
-                        academicYear={academicYear}
-                        events={filteredEvents}
-                        todayStr={TODAY_STR}
-                        searchQuery={searchQuery}
-                        onSelectEvent={(evt) => setSelectedEvent(evt)}
-                        onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
-                        onJumpToMonth={handleJumpToMonth}
-                      />
-                    )}
-
-                    {currentView === 'week' && (
-                      <WeekView
-                        centerDateStr={`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-28`}
-                        events={filteredEvents}
-                        todayStr={TODAY_STR}
-                        searchQuery={searchQuery}
-                        onSelectEvent={(evt) => setSelectedEvent(evt)}
-                        onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
-                        onRescheduleEvent={handleRescheduleEvent}
-                      />
-                    )}
-
-                    {currentView === 'agenda' && (
-                      <AgendaView
-                        events={filteredEvents}
-                        todayStr={TODAY_STR}
-                        searchQuery={searchQuery}
-                        onResetFilters={() => {
-                          setSearchQuery('');
-                          setCategoryFilter('all');
-                          setSemester('all');
-                        }}
-                        onAddEvent={() => handleOpenAddEvent()}
-                        onSelectEvent={(evt) => setSelectedEvent(evt)}
-                      />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            )}
-          </section>
-
-          {/* Upcoming Events Sidebar */}
-          <UpcomingSidebar
-            events={filteredEvents}
-            todayStr={TODAY_STR}
+        {/* Calendar Grid & Sidebar Columns or Full-Width Dashboard */}
+        {currentView === 'dashboard' ? (
+          <DashboardView
+            events={events}
             academicYear={academicYear}
             semester={semester}
+            classFilter={classFilter}
             onSelectEvent={(evt) => setSelectedEvent(evt)}
+            onChangeSemester={(sem) => setSemester(sem)}
+            onChangeClassFilter={(cls) => setClassFilter(cls)}
           />
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            {/* Main Calendar View Area */}
+            <section className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden transition-colors">
+              {filteredEvents.length === 0 ? (
+                <div className="p-6 sm:p-12">
+                  <EmptyState
+                    type={searchQuery ? 'search' : 'filter'}
+                    query={searchQuery}
+                    categoryLabel={
+                      categoryFilter !== 'all'
+                        ? CATEGORIES_CONFIG[categoryFilter]?.label
+                        : undefined
+                    }
+                    onResetFilters={() => {
+                      setSearchQuery('');
+                      setCategoryFilter('all');
+                      setSemester('all');
+                      setClassFilter('all');
+                    }}
+                    onAddEvent={() => handleOpenAddEvent()}
+                  />
+                </div>
+              ) : (
+                <div className="relative overflow-visible w-full">
+                  <AnimatePresence mode="wait" custom={viewDirection} initial={false}>
+                    <motion.div
+                      key={`${currentView}-${currentYear}-${currentMonth}-${academicYear}`}
+                      custom={viewDirection}
+                      variants={{
+                        enter: (direction: number) => ({
+                          x: direction > 0 ? 32 : -32,
+                          opacity: 0,
+                        }),
+                        center: {
+                          x: 0,
+                          opacity: 1,
+                          transition: {
+                            x: { type: 'spring', stiffness: 360, damping: 32 },
+                            opacity: { duration: 0.2, ease: 'easeOut' },
+                          },
+                        },
+                        exit: (direction: number) => ({
+                          x: direction > 0 ? -32 : 32,
+                          opacity: 0,
+                          transition: {
+                            x: { type: 'spring', stiffness: 360, damping: 32 },
+                            opacity: { duration: 0.16, ease: 'easeIn' },
+                          },
+                        }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      className="w-full"
+                    >
+                      {currentView === 'month' && (
+                        <MonthView
+                          currentYear={currentYear}
+                          currentMonth={currentMonth}
+                          events={filteredEvents}
+                          todayStr={TODAY_STR}
+                          searchQuery={searchQuery}
+                          onSelectEvent={(evt) => setSelectedEvent(evt)}
+                          onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
+                          onRescheduleEvent={handleRescheduleEvent}
+                        />
+                      )}
+
+                      {currentView === 'year' && (
+                        <YearView
+                          academicYear={academicYear}
+                          events={filteredEvents}
+                          todayStr={TODAY_STR}
+                          searchQuery={searchQuery}
+                          onSelectEvent={(evt) => setSelectedEvent(evt)}
+                          onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
+                          onJumpToMonth={handleJumpToMonth}
+                        />
+                      )}
+
+                      {currentView === 'week' && (
+                        <WeekView
+                          centerDateStr={`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-28`}
+                          events={filteredEvents}
+                          todayStr={TODAY_STR}
+                          searchQuery={searchQuery}
+                          onSelectEvent={(evt) => setSelectedEvent(evt)}
+                          onSelectDate={(dateStr) => handleOpenAddEvent(dateStr)}
+                          onRescheduleEvent={handleRescheduleEvent}
+                        />
+                      )}
+
+                      {currentView === 'agenda' && (
+                        <AgendaView
+                          events={filteredEvents}
+                          todayStr={TODAY_STR}
+                          searchQuery={searchQuery}
+                          onResetFilters={() => {
+                            setSearchQuery('');
+                            setCategoryFilter('all');
+                            setSemester('all');
+                          }}
+                          onAddEvent={() => handleOpenAddEvent()}
+                          onSelectEvent={(evt) => setSelectedEvent(evt)}
+                        />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              )}
+            </section>
+
+            {/* Upcoming Events Sidebar */}
+            <UpcomingSidebar
+              events={filteredEvents}
+              todayStr={TODAY_STR}
+              academicYear={academicYear}
+              semester={semester}
+              onSelectEvent={(evt) => setSelectedEvent(evt)}
+            />
+          </div>
+        )}
       </main>
 
       {/* Floating Drag & Drop Toast Notification */}
@@ -814,9 +859,11 @@ export default function App() {
       {/* Modals */}
       <EventDetailModal
         event={selectedEvent}
+        events={events}
         onClose={() => setSelectedEvent(null)}
         onEdit={handleEditEventFromDetail}
         onDelete={handleDeleteEvent}
+        onSelectEvent={(evt) => setSelectedEvent(evt)}
       />
 
       <EventFormModal

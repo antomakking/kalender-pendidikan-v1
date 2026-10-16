@@ -36,7 +36,7 @@ export interface AcademicEvent {
   totalSessions?: number; // Total sesi yang dibuat dalam seri
 }
 
-export type CalendarView = 'month' | 'year' | 'week' | 'agenda';
+export type CalendarView = 'month' | 'year' | 'week' | 'agenda' | 'dashboard';
 export type SemesterFilter = 'all' | 'ganjil' | 'genap';
 
 export interface CategoryMeta {

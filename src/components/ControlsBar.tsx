@@ -151,6 +151,9 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
 
   // Compute text label for current period
   const getPeriodLabel = () => {
+    if (currentView === 'dashboard') {
+      return `Statistik & Analytics TA ${academicYear}`;
+    }
     if (currentView === 'month') {
       return `${MONTH_NAMES_ID[currentMonth]} ${currentYear}`;
     }
@@ -175,6 +178,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
               { id: 'month' as const, label: 'Bulanan' },
               { id: 'week' as const, label: 'Pekanan' },
               { id: 'agenda' as const, label: 'Daftar Agenda' },
+              { id: 'dashboard' as const, label: '📊 Analytics' },
             ] as const
           ).map((tab) => {
             const isActive = currentView === tab.id;

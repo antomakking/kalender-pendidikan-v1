@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Calendar as CalendarIcon,
   Clock,
+  Edit,
   Filter,
   Flag,
   GripVertical,
@@ -18,6 +19,7 @@ import {
   DAY_NAMES_ID,
   formatIndonesianDate,
   getCalendarDaysForMonth,
+  getEventClasses,
 } from '../utils/calendarUtils.ts';
 import { EmptyState } from './EmptyState.tsx';
 import { HighlightText } from './HighlightText.tsx';
@@ -326,7 +328,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
 
         {/* Grid of Days (#monthGrid) */}
         <div id="monthGrid" className="grid grid-cols-7 gap-1 sm:gap-2 auto-rows-fr w-full min-w-0">
-          {days.map((dayInfo) => {
+          {days.map((dayInfo, dayIndex) => {
             const { dateStr, dayNumber, isCurrentMonth, isToday, isSunday, isKBM, events: dayEvents } = dayInfo;
             const isDragOver = dragOverDate === dateStr;
             const primaryEvent = dayEvents[0];
@@ -335,6 +337,10 @@ export const MonthView: React.FC<MonthViewProps> = ({
             const isMultiEvent = isCurrentMonth && dayEvents.length > 1;
             const multiGradient90 = isMultiEvent ? getMultiEventGradient(dayEvents, monthEvents, '90deg') : undefined;
             const multiGradient135 = isMultiEvent ? getMultiEventGradient(dayEvents, monthEvents, '135deg') : undefined;
+
+            const colIndex = dayIndex % 7;
+            const isLeftEdge = colIndex <= 1;
+            const isRightEdge = colIndex >= 5;
 
             return (
               <div
@@ -441,11 +447,121 @@ export const MonthView: React.FC<MonthViewProps> = ({
                   </div>
                 )}
 
+                {/* MULTI-AGENDA HOVER LIST POPOVER (MODE DAFTAR BERBARIS KE BAWAH - EDGE AWARE) */}
+                {isCurrentMonth && isMultiEvent && (
+                  <div
+                    className={`absolute bottom-full mb-2 hidden md:group-hover:flex flex-col w-72 sm:w-80 bg-slate-900/98 text-white rounded-2xl shadow-2xl backdrop-blur-md pointer-events-auto z-50 p-3.5 border border-slate-700/90 cursor-default opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:-translate-y-1 text-left font-normal ${
+                      isLeftEdge
+                        ? 'left-0 sm:-left-2'
+                        : isRightEdge
+                        ? 'right-0 sm:-right-2'
+                        : 'left-1/2 -translate-x-1/2'
+                    }`}
+                  >
+                    {/* Popover Header */}
+                    <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: multiGradient90 }} />
+                        <span className="text-xs font-black text-white tracking-tight">
+                          {formatIndonesianDate(dateStr, { withDayName: true })}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-black text-slate-950 px-2 py-0.5 rounded-full shadow-xs bg-[#ffcc00]">
+                        {dayEvents.length} Agenda Terjadwal
+                      </span>
+                    </div>
+
+                    {/* Vertically Stacked Agenda List (Mode Daftar Rapi) */}
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                      {dayEvents.map((event) => {
+                        const style = getDynamicEventStyle(event, monthEvents);
+                        const cat = CATEGORIES_CONFIG[event.category] || CATEGORIES_CONFIG.academic;
+                        const classes = getEventClasses(event);
+                        const classLabel = classes.length === 3 ? 'Kelas X, XI, XII' : classes.map((c) => `Kelas ${c}`).join(', ');
+                        const timeRangeStr = event.startTime && event.endTime
+                          ? `${event.startTime} – ${event.endTime} WITA`
+                          : 'Sepanjang Hari';
+
+                        return (
+                          <div
+                            key={event.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectEvent(event);
+                            }}
+                            className="group/item flex flex-col gap-1 p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-emerald-500/80 transition-all cursor-pointer relative overflow-hidden shadow-xs"
+                          >
+                            {/* Color accent left bar */}
+                            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ backgroundColor: style.hexColor }} />
+
+                            {/* Title & Class Badge Header Row */}
+                            <div className="flex items-start justify-between gap-2 pl-1.5">
+                              <span className="text-xs font-bold text-white leading-snug group-hover/item:text-emerald-300 transition-colors line-clamp-2">
+                                {event.title}
+                              </span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-black bg-amber-400 text-slate-950 border border-amber-300 shadow-2xs">
+                                  🎓 {classLabel}
+                                </span>
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-slate-700 hover:bg-emerald-600 text-white transition-colors">
+                                  <Edit className="w-2.5 h-2.5" />
+                                  <span>Edit</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Sub-info: Category & Time */}
+                            <div className="flex items-center justify-between gap-2 pl-1.5 pt-0.5 text-[10px]">
+                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${style.badgeBg}`}>
+                                {cat.label}
+                              </span>
+                              <span className="text-amber-300 font-bold flex items-center gap-1">
+                                <Clock className="w-2.5 h-2.5 text-amber-300 shrink-0" />
+                                {timeRangeStr}
+                              </span>
+                            </div>
+
+                            {/* Audience & Location Row */}
+                            {(event.location || event.audience) && (
+                              <div className="flex items-center justify-between gap-2 pl-1.5 pt-1 border-t border-slate-700/50 text-[9.5px] text-slate-300">
+                                <span className="truncate flex items-center gap-1 max-w-[130px]">
+                                  <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" /> {event.location || 'Sekolah'}
+                                </span>
+                                <span className="truncate flex items-center gap-1 max-w-[120px] text-right">
+                                  <Users className="w-2.5 h-2.5 text-slate-400 shrink-0" /> {event.audience}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-2 pt-1.5 border-t border-slate-800 text-[9.5px] text-emerald-400 text-center font-medium">
+                      💡 Klik agenda untuk melihat rincian lengkap
+                    </div>
+
+                    {/* Tooltip Arrow */}
+                    <div
+                      className={`absolute top-full -mt-0.5 border-4 border-transparent border-t-slate-900/98 ${
+                        isLeftEdge
+                          ? 'left-8'
+                          : isRightEdge
+                          ? 'right-8'
+                          : 'left-1/2 -translate-x-1/2'
+                      }`}
+                    />
+                  </div>
+                )}
+
                 {/* DESKTOP ONLY: Full Solid Color Blocks with Dynamic Distinct High-Contrast Colors */}
                 <div className="flex space-y-1 mt-1.5 flex-1 flex-col justify-start min-w-0 max-w-full w-full">
                   {dayEvents.map((event) => {
                     const style = getDynamicEventStyle(event, monthEvents);
                     const cat = CATEGORIES_CONFIG[event.category] || CATEGORIES_CONFIG.academic;
+                    const classes = getEventClasses(event);
+                    const classLabel = classes.length === 3 ? 'Kelas X, XI, XII' : classes.map((c) => `Kelas ${c}`).join(', ');
+                    const classShortTag = classes.length === 3 ? 'X-XII' : classes.map((c) => c).join(',');
                     const isBeingDragged = draggingEventId === event.id;
                     const isMultiDay = event.startDate !== event.endDate;
                     const isStart = event.startDate === dateStr;
@@ -469,7 +585,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                           e.stopPropagation();
                           onSelectEvent(event);
                         }}
-                        title={`${event.title}\nKategori: ${cat.label}\nWaktu: ${timeRangeStr}\nPeserta: ${event.audience}\nLokasi: ${event.location}`}
+                        title={`${event.title}\nKelas: ${classLabel}\nKategori: ${cat.label}\nWaktu: ${timeRangeStr}\nPeserta: ${event.audience}\nLokasi: ${event.location}`}
                         className={`w-full min-w-0 max-w-full text-left text-[11px] leading-tight px-2 py-1 font-semibold truncate whitespace-nowrap text-ellipsis transition-all flex items-center gap-1.5 shadow-xs cursor-pointer select-none group/pill relative ${
                           style.bgSolid
                         } ${
@@ -495,21 +611,28 @@ export const MonthView: React.FC<MonthViewProps> = ({
                           query={searchQuery}
                           className="font-semibold block truncate whitespace-nowrap text-ellipsis overflow-hidden min-w-0 max-w-full flex-1"
                         />
+                        <span className="text-[8.5px] font-black px-1 py-0.2 rounded bg-black/25 text-white/90 shrink-0 ml-auto">
+                          🎓 {classShortTag}
+                        </span>
 
-                        {/* Descriptive Small Tooltip on Hover */}
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 hidden md:group-hover/pill:flex flex-col gap-1 w-56 p-2 bg-slate-900/95 text-white text-[11px] rounded-lg shadow-xl backdrop-blur-xs pointer-events-none z-50 opacity-0 group-hover/pill:opacity-100 transition-all duration-150 border border-slate-700/90 whitespace-normal text-left font-normal cursor-default transform group-hover/pill:-translate-y-0.5">
+                        {/* Descriptive Small Tooltip on Hover for single pill */}
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 hidden md:group-hover/pill:flex flex-col gap-1 w-64 p-2.5 bg-slate-900/95 text-white text-[11px] rounded-xl shadow-xl backdrop-blur-xs pointer-events-none z-50 opacity-0 group-hover/pill:opacity-100 transition-all duration-150 border border-slate-700/90 whitespace-normal text-left font-normal cursor-default transform group-hover/pill:-translate-y-0.5">
                           <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-slate-700/80">
                             <span className={`text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded shadow-2xs ${style.badgeBg}`}>
                               {cat.label}
                             </span>
-                            <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1 shrink-0">
-                              <Clock className="w-3 h-3 text-amber-300 shrink-0" />
-                              {timeRangeStr}
+                            <span className="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 border border-amber-300 shadow-2xs">
+                              🎓 {classLabel}
                             </span>
                           </div>
 
                           <div className="font-bold text-white text-xs leading-snug line-clamp-2 mt-0.5">
                             {event.title}
+                          </div>
+
+                          <div className="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-amber-300 shrink-0" />
+                            {timeRangeStr}
                           </div>
 
                           {event.description && (
@@ -522,7 +645,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                             <span className="truncate flex items-center gap-1 max-w-[110px]">
                               <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" /> {event.location}
                             </span>
-                            <span className="truncate flex items-center gap-1 max-w-[85px] text-right">
+                            <span className="truncate flex items-center gap-1 max-w-[95px] text-right">
                               <Users className="w-2.5 h-2.5 text-slate-400 shrink-0" /> {event.audience}
                             </span>
                           </div>
@@ -670,6 +793,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     {dayEvents.map((evt) => {
                       const style = getDynamicEventStyle(evt, monthEvents);
                       const cat = CATEGORIES_CONFIG[evt.category] || CATEGORIES_CONFIG.academic;
+                      const classes = getEventClasses(evt);
+                      const classLabel = classes.length === 3 ? 'Kelas X, XI, XII' : classes.map((c) => `Kelas ${c}`).join(', ');
                       const timeRangeStr = evt.startTime && evt.endTime
                         ? `${evt.startTime} – ${evt.endTime} WITA`
                         : 'Sepanjang Hari';
@@ -678,7 +803,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         <div
                           key={evt.id}
                           onClick={() => onSelectEvent(evt)}
-                          className={`p-2.5 rounded-xl border ${style.borderColor} bg-white shadow-2xs text-left cursor-pointer active:scale-99 transition-all space-y-1.5`}
+                          className={`p-2.5 rounded-xl border ${style.borderColor} bg-white dark:bg-slate-900 shadow-2xs text-left cursor-pointer active:scale-99 transition-all space-y-1.5 relative overflow-hidden`}
                         >
                           <div className="flex items-center justify-between gap-1 flex-wrap">
                             <span
@@ -686,7 +811,10 @@ export const MonthView: React.FC<MonthViewProps> = ({
                             >
                               {cat.label}
                             </span>
-                            <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 border border-amber-300 shadow-2xs">
+                              🎓 {classLabel}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 ml-auto">
                               <Clock className="w-3 h-3 text-slate-400" />
                               {timeRangeStr}
                             </span>
