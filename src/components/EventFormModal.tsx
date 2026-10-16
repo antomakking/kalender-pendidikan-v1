@@ -33,7 +33,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [title, setTitle] = useState(initialEvent?.title || '');
   const [startDate, setStartDate] = useState(initialEvent?.startDate || defaultDate);
   const [endDate, setEndDate] = useState(initialEvent?.endDate || defaultDate);
-  const [startTime, setStartTime] = useState(initialEvent?.startTime || '07:30');
+  const [startTime, setStartTime] = useState(initialEvent?.startTime || '07:00');
   const [endTime, setEndTime] = useState(initialEvent?.endTime || '15:00');
   const [category, setCategory] = useState<EventCategory>(() => {
     const raw = initialEvent?.category || defaultCategory || 'kbm';

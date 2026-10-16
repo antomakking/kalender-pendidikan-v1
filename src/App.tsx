@@ -127,6 +127,19 @@ export default function App() {
                 updated.audience = 'Seluruh Murid kelas X dan XI';
                 updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
               }
+
+              // School activities start from 07:00 WITA (PKL adjusts with industry partners)
+              const isPKL = titleLower.includes('pkl') || titleLower.includes('praktik kerja lapangan');
+              const isHoliday = updated.category === 'holiday' || updated.isOfficialHoliday;
+
+              if (isPKL) {
+                if (updated.id === 'evt-2627-pkl-xii' || updated.id === 'kaldik-2526-pkl') {
+                  updated.audience = 'Siswa Kelas XII (Menyesuaikan Mitra Industri)';
+                }
+              } else if (!isHoliday && updated.startTime && updated.startTime !== '00:00') {
+                updated.startTime = '07:00';
+              }
+
               return updated;
             });
 
