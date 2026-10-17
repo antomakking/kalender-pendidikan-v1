@@ -128,6 +128,84 @@ export default function App() {
                 updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
               }
 
+              // 1. Pembekalan PKL (Hanya Kelas XII)
+              if (titleLower.includes('pembekalan pkl')) {
+                updated.audience = 'Siswa Kelas XII';
+                updated.targetClasses = ['XII' as ClassLevel];
+              }
+
+              // 2. Pelepasan PKL (Hanya Kelas XII)
+              if (titleLower.includes('pelepasan pkl')) {
+                updated.audience = 'Siswa Kelas XII';
+                updated.targetClasses = ['XII' as ClassLevel];
+              }
+
+              // 3. Penarikan PKL (Hanya Kelas XII)
+              if (titleLower.includes('penarikan pkl')) {
+                updated.audience = 'Siswa Kelas XII';
+                updated.targetClasses = ['XII' as ClassLevel];
+              }
+
+              // 4. Class Meeting (Hanya Kelas X dan XI)
+              if (titleLower.includes('class meeting')) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 5. Libur Semester Gasal (Hanya Kelas X dan XI)
+              if (titleLower === 'libur semester gasal' || (titleLower.includes('libur semester gasal') && !titleLower.includes('tahun baru'))) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 6. Tahun Baru 2027 & Libur Semester Gasal (Hanya Kelas X dan XI)
+              if (titleLower.includes('tahun baru 2027') || titleLower.includes('tahun baru 2026')) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 7. Hari Pertama Masuk Sekolah (Hanya Kelas X dan XI)
+              if (titleLower.includes('hari pertama masuk')) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 8. Libur Awal Ramadhan 1448 H (Hanya Kelas X dan XI)
+              if (titleLower.includes('libur awal ramadhan')) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 9. Libur Ramadhan (Hanya Kelas X dan XI)
+              if (titleLower === 'libur ramadhan' || (titleLower.includes('libur ramadhan') && !titleLower.includes('libur awal ramadhan') && !titleLower.includes('idul fitri'))) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 10. Rapat Kenaikan Kelas (Hanya Kelas X dan XI)
+              if (titleLower.includes('rapat kenaikan kelas')) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 11. Penerimaan Laporan Hasil Belajar (Hanya Kelas X dan XI untuk Semester Genap/Juni)
+              if (titleLower.includes('penerimaan laporan') && updated.startDate >= '2027-06-01') {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 12. Libur Semester Genap (Hanya Kelas X dan XI)
+              if (titleLower.includes('libur semester genap')) {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
+              // 13. Sumatif Akhir Semester (SAS Genap / Mei-Juni) (Hanya Kelas X dan XI)
+              if ((titleLower.includes('sumatif akhir semester') || titleLower.includes('sas')) && updated.startDate >= '2027-05-01') {
+                updated.audience = 'Siswa Kelas X & XI';
+                updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+              }
+
               // School activities start from 07:00 WITA (PKL adjusts with industry partners)
               const isPKL = titleLower.includes('pkl') || titleLower.includes('praktik kerja lapangan');
               const isHoliday = updated.category === 'holiday' || updated.isOfficialHoliday;
