@@ -212,8 +212,11 @@ export default function App() {
               const isHoliday = updated.category === 'holiday' || updated.isOfficialHoliday;
 
               if (isPKL) {
+                updated.targetClasses = ['XII' as ClassLevel];
                 if (updated.id === 'evt-2627-pkl-xii' || updated.id === 'kaldik-2526-pkl') {
                   updated.audience = 'Siswa Kelas XII (Menyesuaikan Mitra Industri)';
+                } else if (!updated.audience) {
+                  updated.audience = 'Siswa Kelas XII';
                 }
               } else if (!isHoliday && updated.startTime && updated.startTime !== '00:00') {
                 updated.startTime = '07:00';
