@@ -364,20 +364,6 @@ export const YearView: React.FC<YearViewProps> = ({
                     <div key={`trailing-${i}`} className="py-1" />
                   ))}
                 </div>
-
-                {/* Holiday Footnotes */}
-                {monthEvents.filter((e) => e.category === 'holiday').length > 0 && (
-                  <div className="mt-2 pt-1.5 border-t border-rose-100 dark:border-rose-900/50 text-[9.5px] text-red-600 dark:text-rose-400 font-bold leading-tight space-y-0.5">
-                    {monthEvents
-                      .filter((e) => e.category === 'holiday')
-                      .slice(0, 3)
-                      .map((h) => (
-                        <div key={h.id} className="truncate flex items-center gap-1" title={h.title}>
-                          <span className="truncate">{parseInt(h.startDate.slice(8), 10)} {MONTH_NAMES_ID[month]}: {h.title}</span>
-                        </div>
-                      ))}
-                  </div>
-                )}
               </div>
 
               {/* Month Highlights / Agenda Preview with Distinct Colors Matching the Mini Grid */}

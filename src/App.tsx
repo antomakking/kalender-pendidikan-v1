@@ -114,9 +114,10 @@ export default function App() {
               }
               if (updated.id === 'evt-2627-1104' || titleLower.includes('kls 11 dan 12') || (updated.startDate === '2026-11-23' && titleLower.includes('sumatif'))) {
                 updated.title = 'Sumatif Akhir Semester';
+                updated.endDate = '2026-11-30';
                 updated.audience = 'Siswa Kelas X & XI';
                 updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
-                updated.description = 'Asesmen Sumatif Akhir Semester (SAS) Ganjil bagi siswa Kelas X dan XI.';
+                updated.description = 'Asesmen Sumatif Akhir Semester (SAS) Ganjil bagi siswa Kelas X dan XI (23 – 30 November 2026).';
                 updated.category = 'assessment';
               }
               if (titleLower.includes('tes kompetensi akademik') || titleLower.includes('tka') || titleLower.includes('ujian sekolah')) {
