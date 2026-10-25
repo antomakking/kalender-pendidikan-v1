@@ -386,6 +386,7 @@ export const INITIAL_EVENTS: AcademicEvent[] = [
     location: 'Masjid & Aula SMK IT Ibnul Qayyim',
     audience: 'Seluruh Murid kelas X dan XI',
     targetClasses: ['X', 'XI'],
+    excludedDates: ['2027-02-13'],
     academicYear: '2026/2027',
     semester: 'genap',
   },

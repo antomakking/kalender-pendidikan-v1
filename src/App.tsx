@@ -127,6 +127,7 @@ export default function App() {
               if (titleLower.includes('pesantren ramadhan') || titleLower.includes('pesantren kilat')) {
                 updated.audience = 'Seluruh Murid kelas X dan XI';
                 updated.targetClasses = ['X' as ClassLevel, 'XI' as ClassLevel];
+                updated.excludedDates = Array.from(new Set([...(updated.excludedDates || []), '2027-02-13']));
               }
 
               // 1. Pembekalan PKL (Hanya Kelas XII)

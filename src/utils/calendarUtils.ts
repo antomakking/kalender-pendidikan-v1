@@ -199,8 +199,6 @@ export function formatDateRange(startDateStr: string, endDateStr: string): strin
 export const SELECTED_EXCLUDED_DATES = new Set([
   '2026-10-10',
   '2026-11-14',
-  '2026-12-05',
-  '2027-02-13',
   '2027-05-08',
   '2027-06-05',
 ]);
@@ -215,8 +213,13 @@ export function isDateInRange(
     return false;
   }
 
+  const isPKLEvent = event && (
+    (event.title || '').toLowerCase().includes('pkl') ||
+    (event.title || '').toLowerCase().includes('praktik kerja lapangan')
+  );
+
   // Check if explicitly excluded
-  if (SELECTED_EXCLUDED_DATES.has(targetDateStr)) {
+  if (SELECTED_EXCLUDED_DATES.has(targetDateStr) && !isPKLEvent) {
     return false;
   }
 
